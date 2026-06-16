@@ -1,632 +1,1056 @@
-'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import TopBar from '@/components/TopBar';
+"use client";
+import { useState, useMemo, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
-import { AttendanceContent, AttendanceCSS } from '@/app/attendance/page';
-
-/* ──────────────────────────────────────────────────────────────
-   EMPLOYEE PROFILE · User Details
-   ────────────────────────────────────────────────────────────── */
+import TopBar from '@/components/TopBar';
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-.ep-shell{display:flex;min-height:100vh;background:#F3F4F9;font-family:Inter,sans-serif;}
-.ep-main{margin-left:0;display:flex;flex-direction:column;min-height:100vh;width:100%;}
-.ep-page{flex:1;padding:0 28px 80px;}
 
-/* breadcrumb */
-.ep-bc{display:flex;align-items:center;gap:6px;padding:14px 0 0;font-size:12px;color:#9CA3AF;flex-wrap:wrap;}
-.ep-bc a,.ep-bc-link{color:#9CA3AF;text-decoration:none;transition:color .15s;cursor:pointer;}
-.ep-bc a:hover,.ep-bc-link:hover{color:#4F46E5;}
-.ep-bc-sep{color:#D1D5DB;}
-.ep-bc-cur{color:#4F46E5;font-weight:600;}
+.ud-shell { display: flex; min-height: 100vh; background: #F8F9FF; font-family: 'Inter', sans-serif; }
+.ud-main { margin-left: 230px; display: flex; flex-direction: column; min-height: 100vh; width: calc(100% - 230px); }
+.ud-page { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
-/* title row */
-.ep-title-row{display:flex;align-items:flex-start;justify-content:space-between;margin:12px 0 18px;gap:16px;}
-.ep-h1{font-size:22px;font-weight:800;color:#111827;margin:0 0 4px;}
-.ep-sub{font-size:13px;color:#6B7280;margin:0;}
-.ep-btn-row{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.ep-actions-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;font-family:inherit;transition:border-color .15s;}
-.ep-actions-btn:hover{border-color:#4F46E5;color:#4F46E5;}
-.ep-edit-btn{display:flex;align-items:center;gap:7px;padding:9px 20px;background:#4F46E5;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:background .15s;}
-.ep-edit-btn:hover{background:#4338CA;}
+/* Breadcrumb */
+.ud-bc { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748B; font-weight: 500; }
+.ud-bc a { color: #8B5CF6; text-decoration: none; font-weight: 600; transition: color .15s; }
+.ud-bc a:hover { color: #6D28D9; }
+.ud-bc-sep { color: #D8B4FE; font-weight: 600; }
+.ud-bc-cur { color: #0F172A; font-weight: 700; }
 
-/* profile header card */
-.ep-profile-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:22px 24px;margin-bottom:0;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:22px;}
-.ep-avatar-wrap{width:100px;height:100px;border-radius:50%;overflow:hidden;flex-shrink:0;border:3px solid #E0E7FF;background:#EEF2FF;}
-.ep-user-section{flex:1;min-width:0;}
-.ep-user-name-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
-.ep-user-name{font-size:20px;font-weight:800;color:#111827;}
-.ep-active-badge{background:#DCFCE7;color:#16A34A;border:1px solid #BBF7D0;border-radius:6px;font-size:11.5px;font-weight:700;padding:3px 10px;}
-.ep-user-role{font-size:14px;color:#6B7280;margin-bottom:8px;}
-.ep-user-meta{display:flex;flex-direction:column;gap:5px;}
-.ep-meta-row{display:flex;align-items:center;gap:7px;font-size:13px;color:#374151;}
-.ep-meta-label{color:#9CA3AF;font-size:12px;min-width:68px;}
-.ep-meta-val{font-weight:600;color:#111827;}
-.ep-meta-val.phone{font-size:14.5px;font-weight:800;}
-.ep-date-section{display:flex;flex-direction:column;gap:10px;flex-shrink:0;min-width:240px;}
-.ep-date-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;}
-.ep-date-ic{color:#9CA3AF;display:flex;flex-shrink:0;margin-top:1px;}
-.ep-date-label{color:#6B7280;font-size:12px;white-space:nowrap;}
-.ep-date-val{font-weight:600;color:#111827;font-size:12.5px;}
+/* Actions row */
+.ud-actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: -4px; }
+.ud-h1 { font-size: 24px; font-weight: 800; color: #0F172A; margin: 0; }
+.bi-sub { font-size: 13.5px; color: #64748B; margin: 4px 0 0 0; font-weight: 500; }
+.ud-btn-wrap { display: flex; gap: 8px; }
+.ud-btn-outline { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1.5px solid #E2E8F0; border-radius: 8px; font-size: 13px; font-weight: 700; color: #0F172A; background: #fff; cursor: pointer; transition: all .15s; }
+.ud-btn-outline:hover { border-color: #6366F1; color: #6366F1; background: #F8FAFC; }
+.ud-btn-primary { display: flex; align-items: center; gap: 8px; padding: 10px 18px; background: #2a195c; color: #fff; border: 1.5px solid #2a195c; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+.ud-btn-primary:hover { background: #4338CA; border-color: #4338CA; }
 
-/* tabs */
-.ep-tabs-bar{display:flex;align-items:center;background:#fff;border:1px solid #E5E7EB;border-radius:0 0 0 0;border-top:none;border-bottom:none;padding:0 24px;box-shadow:0 1px 0 #E5E7EB;margin-bottom:20px;}
-.ep-tab{display:flex;align-items:center;gap:7px;padding:14px 18px;font-size:13.5px;font-weight:600;color:#6B7280;cursor:pointer;border-bottom:2.5px solid transparent;transition:color .15s,border-color .15s;user-select:none;white-space:nowrap;}
-.ep-tab.active{color:#4F46E5;border-bottom-color:#4F46E5;}
-.ep-tab:hover:not(.active){color:#374151;}
-.ep-tabs-card{background:#fff;border:1px solid #E5E7EB;border-radius:0 0 14px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-top:none;}
+/* User profile header card */
+.ud-profile-card { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 16px; padding: 24px; display: grid; grid-template-columns: 1.25fr 1fr 1.25fr; gap: 28px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.02); }
+.ud-profile-left { display: flex; gap: 20px; align-items: center; }
+.ud-avatar-circle { width: 90px; height: 90px; border-radius: 50%; overflow: hidden; background: #EEF2FF; border: 1.5px solid #E2E8F0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ud-avatar-circle img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.ud-profile-details { display: flex; flex-direction: column; gap: 4px; }
+.ud-profile-name-row { display: flex; align-items: center; gap: 8px; }
+.ud-profile-name { font-size: 19px; font-weight: 800; color: #0F172A; }
+.badge-active { background: #DCFCE7; color: #15803D; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; border: 1px solid #BBF7D0; }
+.badge-inactive { background: #FEE2E2; color: #991B1B; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; border: 1px solid #FCA5A5; }
+.ud-profile-role { font-size: 13px; color: #475569; font-weight: 600; }
+.ud-profile-meta-line { font-size: 13px; color: #64748B; font-weight: 500; }
+.ud-profile-meta-line span { font-weight: 700; color: #0F172A; }
 
-/* main 2-col layout */
-.ep-layout{display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;}
+.ud-profile-mid { display: flex; flex-direction: column; gap: 10px; border-left: 1.5px solid #F1F5F9; border-right: 1.5px solid #F1F5F9; padding: 0 24px; }
+.ud-mid-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.ud-mid-lbl { color: #64748B; font-weight: 600; }
+.ud-mid-val { font-weight: 700; color: #0F172A; }
+.badge-purple-role { background: #F3E8FF; color: #7E22CE; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 6px; border: 1px solid #E9D5FF; }
 
-/* card */
-.ep-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-.ep-card-hdr{padding:16px 20px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;}
-.ep-card-title{font-size:14px;font-weight:700;color:#111827;}
-.ep-card-sub{font-size:12px;color:#6B7280;margin-top:2px;}
-.ep-card-body{padding:16px 20px;}
+/* Permissions Summary Card inside profile */
+.ud-summary-card { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ud-summary-title { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
+.ud-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.ud-summary-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ud-summary-lbl { font-size: 9.5px; color: #64748B; font-weight: 600; text-align: center; white-space: nowrap; }
+.ud-summary-box { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; font-size: 14px; font-weight: 800; color: #0F172A; border: 1px solid #E2E8F0; }
+.ud-summary-box.purple { background: #F5F3FF; border-color: #DDD6FE; color: #7C3AED; }
+.ud-summary-box.blue { background: #EFF6FF; border-color: #BFDBFE; color: #2563EB; }
+.ud-summary-box.green { background: #ECFDF5; border-color: #A7F3D0; color: #059669; }
+.ud-summary-box.red { background: #FEE2E2; border-color: #FCA5A5; color: #EF4444; }
 
-/* permissions summary */
-.ep-perm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
-.ep-perm-box{background:#FAFAFA;border:1px solid #E5E7EB;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;}
-.ep-perm-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ep-perm-num{font-size:22px;font-weight:800;color:#111827;line-height:1;}
-.ep-perm-lbl{font-size:11.5px;color:#9CA3AF;margin-top:2px;}
-.ep-view-link{display:flex;align-items:center;gap:4px;font-size:11.5px;color:#4F46E5;font-weight:600;cursor:pointer;margin-top:4px;}
-.ep-view-link:hover{text-decoration:underline;}
+/* Tabs bar */
+.ud-tabs { display: flex; border-bottom: 1.5px solid #E2E8F0; gap: 28px; margin-bottom: 16px; }
+.ud-tab { padding: 12px 8px; font-size: 14px; font-weight: 700; color: #64748B; cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; margin-bottom: -1.5px; }
+.ud-tab:hover { color: #2a195c; }
+.ud-tab.active { color: #2a195c; border-bottom-color: #2a195c; }
 
-/* module access */
-.ep-module-sec-hdr{font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;}
-.ep-module-sec-sub{font-size:12px;color:#6B7280;margin-bottom:12px;}
-.ep-module-table{width:100%;border-collapse:collapse;}
-.ep-module-table th{text-align:left;font-size:11.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;background:#F9FAFB;border-bottom:1px solid #E5E7EB;}
-.ep-module-table td{padding:10px 12px;border-bottom:1px solid #F3F4F6;font-size:13px;color:#374151;vertical-align:middle;}
-.ep-module-table tr:last-child td{border-bottom:none;}
-.ep-module-row-name{display:flex;align-items:center;gap:9px;font-weight:600;color:#111827;}
-.ep-mod-ic{width:28px;height:28px;border-radius:7px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;color:#4F46E5;flex-shrink:0;}
-.ep-access-badge{border-radius:6px;font-size:11.5px;font-weight:700;padding:3px 10px;display:inline-block;}
-.ep-access-full{background:#DCFCE7;color:#16A34A;}
-.ep-access-viewedit{background:#EEF2FF;color:#4F46E5;}
-.ep-access-viewonly{background:#FEF3C7;color:#92400E;}
-.ep-access-restricted{background:#FEE2E2;color:#B91C1C;}
-.ep-viewall-link{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:#4F46E5;font-weight:600;cursor:pointer;margin-top:10px;}
-.ep-viewall-link:hover{text-decoration:underline;}
+/* Layout grids */
+.ud-two-col { display: grid; grid-template-columns: 1.85fr 1fr; gap: 20px; align-items: start; }
+.ud-card { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.02); display: flex; flex-direction: column; gap: 16px; }
+.ud-card-hdr { display: flex; justify-content: space-between; align-items: center; }
+.ud-card-tit { font-size: 15px; font-weight: 800; color: #0F172A; margin: 0; display: flex; justify-content: space-between; align-items: center; }
 
-/* devices & sessions */
-.ep-device-table{width:100%;border-collapse:collapse;margin-top:8px;}
-.ep-device-table th{text-align:left;font-size:11.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;padding:8px 0;border-bottom:1px solid #E5E7EB;}
-.ep-device-table td{padding:10px 0;border-bottom:1px solid #F3F4F6;font-size:12.5px;color:#374151;vertical-align:middle;}
-.ep-device-table tr:last-child td{border-bottom:none;}
-.ep-current-badge{background:#DCFCE7;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:2px 8px;}
+/* Module access table */
+.ud-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.ud-table th { font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; padding: 12px; border-bottom: 1.5px solid #E2E8F0; background: #F8FAFC; text-align: center; }
+.ud-table th:first-child { text-align: left; }
+.ud-table td { padding: 12px; font-size: 13px; color: #334155; border-bottom: 1.5px solid #F1F5F9; vertical-align: middle; }
+.ud-table tr:last-child td { border-bottom: none; }
+.ud-table tr:hover td { background: #FAFBFD; }
 
-/* activity log tab */
-.ep-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-.ep-search-wrap{position:relative;flex:1;min-width:180px;}
-.ep-search-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;pointer-events:none;display:flex;}
-.ep-search-inp{width:100%;padding:9px 12px 9px 34px;border:1.5px solid #E5E7EB;border-radius:9px;font-size:13px;color:#111827;outline:none;font-family:inherit;background:#fff;transition:border-color .15s;box-sizing:border-box;}
-.ep-search-inp::placeholder{color:#9CA3AF;}
-.ep-search-inp:focus{border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.1);}
-.ep-filter-sel{padding:9px 32px 9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-size:13px;color:#374151;font-family:inherit;outline:none;background:#fff;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer;transition:border-color .15s;}
-.ep-filter-sel:focus{border-color:#4F46E5;}
-.ep-date-filter{display:flex;align-items:center;gap:7px;padding:9px 14px;border:1.5px solid #E5E7EB;border-radius:9px;font-size:13px;color:#374151;cursor:pointer;white-space:nowrap;background:#fff;}
-.ep-reset-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;background:#fff;border:1.5px solid #E5E7EB;border-radius:9px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;font-family:inherit;transition:border-color .15s;}
-.ep-reset-btn:hover{border-color:#4F46E5;color:#4F46E5;}
-.ep-act-table{width:100%;border-collapse:collapse;}
-.ep-act-table th{text-align:left;font-size:11.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;background:#F9FAFB;border-bottom:1.5px solid #E5E7EB;}
-.ep-act-table td{padding:12px 14px;border-bottom:1px solid #F3F4F6;font-size:12.5px;color:#374151;vertical-align:middle;}
-.ep-act-table tr:hover td{background:#FAFAFA;}
-.ep-act-badge{display:inline-flex;align-items:center;gap:5px;border-radius:7px;font-size:12px;font-weight:700;padding:4px 10px;}
-.ep-act-login{background:#EEF2FF;color:#4F46E5;}
-.ep-act-update{background:#DBEAFE;color:#2563EB;}
-.ep-act-create{background:#DCFCE7;color:#16A34A;}
-.ep-act-delete{background:#FEE2E2;color:#EF4444;}
-.ep-act-user-row{display:flex;align-items:center;gap:7px;}
-.ep-act-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;}
-.ep-act-user-name{font-size:12px;font-weight:600;color:#111827;}
-.ep-act-user-id{font-size:11px;color:#9CA3AF;}
-.ep-pag-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid #F3F4F6;}
-.ep-pag-info{font-size:12px;color:#9CA3AF;}
-.ep-pag-btns{display:flex;align-items:center;gap:4px;}
-.ep-pg-btn{min-width:30px;height:30px;border-radius:6px;border:1.5px solid #E5E7EB;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;padding:0 6px;font-family:inherit;transition:border-color .15s;}
-.ep-pg-btn.active{background:#4F46E5;border-color:#4F46E5;color:#fff;}
-.ep-pg-btn:hover:not(.active){border-color:#4F46E5;color:#4F46E5;}
-.ep-per-page-sel{padding:5px 24px 5px 8px;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;color:#374151;font-family:inherit;outline:none;background:#fff;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;}
+/* Circular icons badges */
+.perm-badge-circle { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; margin: 0 auto; }
+.perm-badge-circle.granted { background: #DCFCE7; color: #16A34A; border: 1.2px solid #BBF7D0; }
+.perm-badge-circle.restricted { background: #FEE2E2; color: #EF4444; border: 1.2px solid #FECACA; }
+.perm-badge-circle.na { background: #F1F5F9; color: #94A3B8; border: 1.2px solid #E2E8F0; }
 
-/* right panel */
-.ep-rp{display:flex;flex-direction:column;gap:14px;position:sticky;top:80px;}
-.ep-rp-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-.ep-rp-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #E5E7EB;}
-.ep-rp-title{font-size:13.5px;font-weight:700;color:#111827;}
-.ep-rp-body{padding:12px 16px;}
-.ep-rp-row{display:flex;align-items:flex-start;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F9FAFB;font-size:12.5px;}
-.ep-rp-row:last-child{border-bottom:none;}
-.ep-rp-label{color:#6B7280;}
-.ep-rp-val{font-weight:600;color:#111827;text-align:right;max-width:55%;}
-.ep-role-badge{background:#EEF2FF;color:#4F46E5;border-radius:6px;font-size:11.5px;font-weight:700;padding:3px 10px;display:inline-block;}
-.ep-act-list{padding:8px 0;}
-.ep-act-item{display:flex;align-items:flex-start;gap:9px;padding:8px 16px;border-bottom:1px solid #F9FAFB;}
-.ep-act-item:last-child{border-bottom:none;}
-.ep-act-ic-wrap{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ep-act-text{font-size:12px;color:#374151;line-height:1.4;flex:1;}
-.ep-act-time{font-size:11px;color:#9CA3AF;white-space:nowrap;margin-top:2px;}
-.ep-viewall-btn{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#4F46E5;cursor:pointer;}
-.ep-viewall-btn:hover{text-decoration:underline;}
-.ep-sec-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F9FAFB;font-size:12.5px;}
-.ep-sec-row:last-child{border-bottom:none;}
-.ep-sec-label{color:#6B7280;}
-.ep-sec-val{font-weight:600;color:#111827;}
-.ep-sec-action{font-size:11.5px;color:#4F46E5;font-weight:600;cursor:pointer;}
-.ep-sec-action:hover{text-decoration:underline;}
-.ep-enabled-badge{background:#DCFCE7;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:2px 8px;}
-.ep-tabs-container{background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:0;}
+/* Legend items circular badges */
+.perm-legend-row { display: flex; gap: 20px; margin-top: 12px; font-size: 12px; color: #475569; font-weight: 600; border-top: 1.5px solid #F1F5F9; padding-top: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+
+/* Table Module style */
+.module-chevron { color: #94A3B8; flex-shrink: 0; margin-right: 4px; }
+.module-icon-wrap { width: 32px; height: 32px; background: #F3E8FF; border: 1.2px solid #E9D5FF; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #7E22CE; flex-shrink: 0; }
+
+/* Quick actions */
+.ud-qa-list { display: flex; flex-direction: column; gap: 8px; }
+.ud-qa-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-size: 13px; font-weight: 700; color: #334155; cursor: pointer; transition: all .15s; background: #fff; }
+.ud-qa-item:hover { border-color: #2a195c; color: #2a195c; background: #FAFBFD; }
+
+/* Overview Perm Summary Blocks */
+.ud-perms-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.ud-perm-block { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid #E2E8F0; border-radius: 10px; }
+.ud-perm-ic-box { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.ud-perm-ic-box.ic-purple { background: #FAF5FF; color: #7C3AED; }
+.ud-perm-ic-box.ic-blue { background: #EFF6FF; color: #2563EB; }
+.ud-perm-ic-box.ic-green { background: #ECFDF5; color: #059669; }
+.ud-perm-ic-box.ic-red { background: #FEE2E2; color: #EF4444; }
+.ud-perm-num { font-size: 18px; font-weight: 800; color: #0F172A; line-height: 1.2; }
+.ud-perm-lbl { font-size: 11px; color: #64748B; font-weight: 600; }
+
+.status-check-green { display: inline-flex; align-items: center; color: #16A34A; font-weight: 700; font-size: 12.5px; }
+.badge-blue-text { color: #2563EB; font-weight: 700; font-size: 12.5px; }
+.badge-orange-text { color: #EA580C; font-weight: 700; font-size: 12.5px; }
+.table-viewall { font-size: 12px; font-weight: 700; color: #8B5CF6; cursor: pointer; }
+.table-viewall:hover { text-decoration: underline; }
+
+.badge-green-filled { background: #DCFCE7; color: #15803D; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+
+/* Security logs list */
+.ud-info-list { display: flex; flex-direction: column; gap: 14px; }
+.ud-info-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px dashed #E2E8F0; padding-bottom: 10px; }
+.ud-info-row:last-child { border-bottom: none; padding-bottom: 0; }
+.ud-info-lbl { color: #64748B; font-weight: 600; }
+.ud-info-val { font-weight: 700; color: #0F172A; }
+.ud-info-link { color: #8B5CF6; font-weight: 700; cursor: pointer; font-size: 12px; }
+.ud-info-link:hover { text-decoration: underline; }
+
+/* Recent activity list */
+.act-list { display: flex; flex-direction: column; gap: 16px; position: relative; padding-left: 14px; }
+.act-list::before { content: ''; position: absolute; left: 3.5px; top: 6px; bottom: 6px; width: 1.5px; background: #E2E8F0; }
+.act-item { display: flex; gap: 12px; position: relative; }
+.act-dot { width: 8px; height: 8px; border-radius: 50%; background: #CBD5E1; border: 2px solid #fff; position: absolute; left: -14px; top: 5px; box-shadow: 0 0 0 2px #E2E8F0; }
+.act-item:first-child .act-dot { background: #7C3AED; box-shadow: 0 0 0 2px #DDD6FE; }
+.act-info { display: flex; flex-direction: column; gap: 2px; }
+.act-txt { font-size: 12.5px; color: #334155; font-weight: 600; line-height: 1.4; }
+.act-time { font-size: 11px; color: #94A3B8; font-weight: 500; }
+
+/* Activity tab log classes */
+.act-filter-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr auto; gap: 10px; align-items: center; margin-bottom: 8px; }
+.fr-search-wrap { position: relative; display: flex; align-items: center; }
+.fr-search-input { width: 100%; padding: 8px 12px 8px 32px; border: 1.5px solid #E2E8F0; border-radius: 8px; font-size: 13px; outline: none; font-weight: 500; }
+.fr-search-input:focus { border-color: #7C3AED; }
+.fr-search-icon { position: absolute; left: 10px; color: #94A3B8; display: flex; align-items: center; }
+
+.bi-select { padding: 8px 12px; border: 1.5px solid #E2E8F0; border-radius: 8px; font-size: 13px; outline: none; background: #fff; color: #334155; cursor: pointer; font-weight: 500; }
+.bi-select:focus { border-color: #7C3AED; }
+.bi-reset-btn { font-size: 12.5px; font-weight: 700; color: #EF4444; background: none; border: none; cursor: pointer; }
+.bi-reset-btn:hover { text-decoration: underline; }
+
+.act-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
+.act-b-login { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+.act-b-update { background: #FAF5FF; color: #7E22CE; border-color: #E9D5FF; }
+.act-b-create { background: #ECFDF5; color: #047857; border-color: #A7F3D0; }
+.act-b-delete { background: #FEE2E2; color: #B91C1C; border-color: #FCA5A5; }
+
+.usr-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.usr-avatar.purple { background: #F5F3FF; color: #7C3AED; border: 1px solid #E9D5FF; }
+.usr-avatar.green { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+.usr-avatar.orange { background: #FFF7ED; color: #D97706; border: 1px solid #FFEDD5; }
+.usr-avatar.blue { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+.usr-avatar.pink { background: #FDF2F8; color: #DB2777; border: 1px solid #FBCFE8; }
+
+.bi-tcard-ft { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-top: 1.5px solid #E2E8F0; background: #FAFBFD; margin-top: 14px; border-radius: 0 0 10px 10px; }
+.bi-tcard-ft-lbl { font-size: 12px; color: #64748B; font-weight: 500; }
+.bi-pg { display: flex; align-items: center; gap: 4px; }
+.bi-pgb { width: 28px; height: 28px; border: 1.5px solid #E2E8F0; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 600; color: #64748B; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
+.bi-pgb:hover:not(:disabled) { border-color: #7C3AED; color: #7C3AED; }
+.bi-pgb.cur { background: #2a195c; color: #fff; border-color: #2a195c; }
+.bi-pgb:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
-/* ── Icons ── */
-const S={fill:'none',stroke:'currentColor',strokeWidth:2 as number,strokeLinecap:'round' as const,strokeLinejoin:'round' as const};
-const SV=({s=14,children,...p}:{s?:number;children:React.ReactNode}&React.SVGProps<SVGSVGElement>)=>(
-  <svg width={s} height={s} viewBox="0 0 24 24" {...S} {...p}>{children}</svg>
-);
-const IEdit    = ()=><SV s={13}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></SV>;
-const IActions = ()=><SV s={13}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SV>;
-const ILeft    = ()=><SV s={13}><polyline points="15 18 9 12 15 6"/></SV>;
-const ICheck   = ({s=13}:{s?:number})=><SV s={s}><polyline points="20 6 9 17 4 12"/></SV>;
-const IArr     = ({s=11}:{s?:number})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
-const ISearch  = ()=><SV s={14}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></SV>;
-const ICal     = ({s=14}:{s?:number})=><SV s={s}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></SV>;
-const IRefresh = ()=><SV s={13}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></SV>;
-const IMonitor = ()=><SV s={14}><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></SV>;
-const IPhone   = ()=><SV s={13}><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></SV>;
-const IShield  = ()=><SV s={14}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></SV>;
-const IGrid    = ()=><SV s={14}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></SV>;
-const IBell    = ()=><SV s={14}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></SV>;
-const IClip    = ()=><SV s={14}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></SV>;
-const IBattery = ()=><SV s={14}><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><line x1="6" y1="11" x2="10" y2="11"/><polyline points="10 9 10 13 14 12 14 9"/></SV>;
-const IUser    = ()=><SV s={14}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></SV>;
-const IMail    = ()=><SV s={13}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></SV>;
-const IKey     = ()=><SV s={14}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SV>;
-const ILock    = ()=><SV s={14}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></SV>;
-const ILogin   = ()=><SV s={12}><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></SV>;
-const ITrash   = ()=><SV s={12}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></SV>;
-const ICreate  = ()=><SV s={12}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></SV>;
+interface DeviceSession {
+  device: string;
+  ip: string;
+  location: string;
+  time: string;
+  current?: boolean;
+}
 
-/* ── Avatar SVG ── */
-const AvatarSVG = () => (
-  <svg viewBox="0 0 120 120" fill="none" style={{width:'100%',height:'100%'}}>
-    <circle cx="60" cy="60" r="60" fill="#E8ECFF"/>
-    {/* body */}
-    <ellipse cx="60" cy="112" rx="42" ry="28" fill="#4F46E5"/>
-    {/* collar */}
-    <path d="M48 82 L60 92 L72 82 L68 76 L60 84 L52 76 Z" fill="#3730A3"/>
-    {/* neck */}
-    <rect x="53" y="66" width="14" height="18" rx="2" fill="#C68A52"/>
-    {/* head */}
-    <circle cx="60" cy="54" r="24" fill="#C68A52"/>
-    {/* hair */}
-    <path d="M36 44 Q38 26 60 24 Q82 26 84 44 Q80 30 60 32 Q40 30 36 44Z" fill="#1A1A1A"/>
-    {/* ears */}
-    <circle cx="36" cy="55" r="5" fill="#B5743A"/>
-    <circle cx="84" cy="55" r="5" fill="#B5743A"/>
-    {/* eyebrows */}
-    <path d="M46 44 Q52 41 58 44" stroke="#111" strokeWidth="2" fill="none" strokeLinecap="round"/>
-    <path d="M62 44 Q68 41 74 44" stroke="#111" strokeWidth="2" fill="none" strokeLinecap="round"/>
-    {/* eyes */}
-    <circle cx="52" cy="51" r="3.5" fill="#111"/>
-    <circle cx="68" cy="51" r="3.5" fill="#111"/>
-    <circle cx="53" cy="50" r="1.2" fill="white" opacity="0.7"/>
-    <circle cx="69" cy="50" r="1.2" fill="white" opacity="0.7"/>
-    {/* nose */}
-    <path d="M57 57 Q60 60 63 57" stroke="#A0652A" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-    {/* mustache */}
-    <path d="M50 63 Q60 61 70 63" stroke="#1A1A1A" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-    {/* beard */}
-    <path d="M44 64 Q48 76 60 79 Q72 76 76 64 Q72 72 60 74 Q48 72 44 64Z" fill="#1A1A1A" opacity="0.85"/>
-    {/* smile */}
-    <path d="M54 66 Q60 69 66 66" stroke="#A0652A" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.6"/>
-  </svg>
-);
-
-/* ── Module data ── */
-const MODULES = [
-  { name:'Dashboard',    icon:<IGrid/>,    access:'Full Access',   cls:'ep-access-full'      },
-  { name:'Riders',       icon:<IUser/>,    access:'Full Access',   cls:'ep-access-full'      },
-  { name:'Battery',      icon:<IBattery/>, access:'View & Edit',   cls:'ep-access-viewedit'  },
-  { name:'Reports',      icon:<IClip/>,    access:'View & Edit',   cls:'ep-access-viewedit'  },
-  { name:'Finance',      icon:<IKey/>,     access:'View Only',     cls:'ep-access-viewonly'  },
-  { name:'Alerts',       icon:<IBell/>,    access:'View & Edit',   cls:'ep-access-viewedit'  },
+const SESSIONS: DeviceSession[] = [
+  { device: 'Chrome on Windows', ip: '192.168.1.10', location: 'New Delhi, India', time: '20 May 2024, 10:30 AM', current: true },
+  { device: 'Safari on iPhone', ip: '103.22.245.99', location: 'New Delhi, India', time: '19 May 2024, 11:20 PM' }
 ];
 
-const ACTIVITY_LOG = [
-  { dt:'20 May 2024, 09:15 AM', action:'Login',  actionCls:'ep-act-login',  module:'Authentication', detail:'User logged in to the system',                      ip:'103.21.244.12' },
-  { dt:'20 May 2024, 08:45 AM', action:'Update', actionCls:'ep-act-update', module:'Riders',         detail:'Updated rider assignment for Rider ID: RD-1256',     ip:'103.21.244.12' },
-  { dt:'19 May 2024, 06:20 PM', action:'Create', actionCls:'ep-act-create', module:'Reports',        detail:'Generated zone performance report',                  ip:'103.21.244.12' },
-  { dt:'19 May 2024, 04:05 PM', action:'Update', actionCls:'ep-act-update', module:'Battery',        detail:'Updated battery inventory (Battery ID: BT-9876)',     ip:'103.21.244.12' },
-  { dt:'18 May 2024, 11:30 AM', action:'Create', actionCls:'ep-act-create', module:'Support',        detail:'Created support ticket #ST-5582',                    ip:'103.21.244.12' },
-  { dt:'18 May 2024, 10:10 AM', action:'Delete', actionCls:'ep-act-delete', module:'Alerts',         detail:'Deleted alert ID: AL-3342',                          ip:'103.21.244.12' },
-  { dt:'17 May 2024, 07:40 PM', action:'Update', actionCls:'ep-act-update', module:'Vehicles',       detail:'Updated vehicle details (Vehicle ID: VH-7789)',       ip:'103.21.244.12' },
-  { dt:'17 May 2024, 03:15 PM', action:'Login',  actionCls:'ep-act-login',  module:'Authentication', detail:'User logged out from the system',                    ip:'103.21.244.12' },
+interface ModuleAccess {
+  name: string;
+  level: string;
+  type: 'full' | 'edit' | 'read';
+}
+
+const MODULES_SUMMARY: ModuleAccess[] = [
+  { name: 'Dashboard', level: 'Full Access', type: 'full' },
+  { name: 'Riders', level: 'Full Access', type: 'full' },
+  { name: 'Battery', level: 'Full Access', type: 'full' },
+  { name: 'Reports', level: 'Full Access', type: 'full' },
+  { name: 'Franchise', level: 'Full Access', type: 'full' },
+  { name: 'Alerts', level: 'Full Access', type: 'full' },
+  { name: 'Settings', level: 'Full Access', type: 'full' }
 ];
 
-const ActionIcon = ({action}:{action:string}) => {
-  if (action==='Login')  return <ILogin/>;
-  if (action==='Update') return <IEdit/>;
-  if (action==='Create') return <ICreate/>;
-  if (action==='Delete') return <ITrash/>;
-  return null;
+interface LoggedActivity {
+  time: string;
+  action: 'Login' | 'Update' | 'Create' | 'Delete';
+  module: string;
+  details: string;
+  ip: string;
+  performedBy: string;
+  performedByInitials: string;
+  avatarCls: string;
+}
+
+const LOGGED_ACTIVITIES: LoggedActivity[] = [
+  { time: '20 May 2024, 10:30 AM', action: 'Login', module: 'Authentication', details: 'User logged in to the system', ip: '192.168.1.10', performedBy: 'Akash Verma', performedByInitials: 'AV', avatarCls: 'purple' },
+  { time: '20 May 2024, 10:15 AM', action: 'Update', module: 'Settings', details: 'Configured Connaught Place Zone threshold variables', ip: '192.168.1.10', performedBy: 'Akash Verma', performedByInitials: 'AV', avatarCls: 'purple' },
+  { time: '20 May 2024, 09:40 AM', action: 'Create', module: 'Users', details: 'Created a new employee account USR-005 (Pooja Mehta)', ip: '192.168.1.10', performedBy: 'Akash Verma', performedByInitials: 'AV', avatarCls: 'purple' },
+  { time: '19 May 2024, 05:15 PM', action: 'Update', module: 'Franchise', details: 'Approved Franchise Application #FA-2309', ip: '192.168.1.10', performedBy: 'Akash Verma', performedByInitials: 'AV', avatarCls: 'purple' }
+];
+
+interface PermissionRow {
+  name: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  access: 'granted' | 'restricted' | 'na';
+  create: 'granted' | 'restricted' | 'na';
+  view: 'granted' | 'restricted' | 'na';
+  edit: 'granted' | 'restricted' | 'na';
+  delete: 'granted' | 'restricted' | 'na';
+  export: 'granted' | 'restricted' | 'na';
+}
+
+const PERM_ROWS: PermissionRow[] = [
+  {
+    name: 'Dashboard',
+    subtitle: 'View dashboards and analytics',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  },
+  {
+    name: 'Riders',
+    subtitle: 'Manage riders and rider analytics',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  },
+  {
+    name: 'Vehicles',
+    subtitle: 'Manage vehicles and documents',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  },
+  {
+    name: 'Battery',
+    subtitle: 'Battery inventory and operations',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="11" x2="23" y2="13"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  },
+  {
+    name: 'Reports',
+    subtitle: 'Generate and view reports',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  },
+  {
+    name: 'Franchise',
+    subtitle: 'Franchise management',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  },
+  {
+    name: 'Alerts',
+    subtitle: 'View and manage alerts',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  },
+  {
+    name: 'Settings',
+    subtitle: 'System and platform settings',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+    access: 'granted', create: 'granted', view: 'granted', edit: 'granted', delete: 'granted', export: 'granted'
+  }
+];
+
+const USER_INFO = {
+  id: 'USR-001',
+  name: 'Akash Verma',
+  email: 'akash.verma@evegah.com',
+  mobile: '+91 98765 43210',
+  role: 'Zone Admin',
+  zone: 'Connaught Place Zone',
+  status: 'Active',
+  reportingTo: 'None (System Admin)',
+  avatar: '/priya_avatar.png', // Fallback or loaded profile image
+  initials: 'AV',
+  avatarBg: '#F5F3FF',
+  avatarCls: 'purple'
 };
 
-/* ── Overview Tab ── */
-function OverviewTab() {
-  return (
-    <div style={{padding:'20px 24px'}}>
-      {/* Permissions Summary */}
-      <div style={{marginBottom:22}}>
-        <div style={{fontSize:14,fontWeight:700,color:'#111827',marginBottom:3}}>Permissions Summary</div>
-        <div style={{fontSize:12,color:'#6B7280',marginBottom:14}}>Overview of role permissions assigned to this user</div>
-        <div className="ep-perm-grid">
-          {[
-            {ic:<IGrid/>, num:8,  lbl:'Total Modules', sub:'View all modules', color:'#EEF2FF', icColor:'#4F46E5'},
-            {ic:<ILock/>, num:42, lbl:'Permissions',   sub:'Total permissions', color:'#EFF6FF', icColor:'#2563EB'},
-            {ic:<ICheck/>,num:38, lbl:'Granted',        sub:'Granted permissions', color:'#F0FDF4', icColor:'#16A34A'},
-            {ic:<IBell/>, num:4,  lbl:'Restricted',     sub:'Restricted permissions', color:'#FEF2F2', icColor:'#EF4444'},
-          ].map(b=>(
-            <div key={b.lbl} className="ep-perm-box">
-              <div className="ep-perm-icon" style={{background:b.color,color:b.icColor}}>{b.ic}</div>
-              <div>
-                <div className="ep-perm-num">{b.num}</div>
-                <div className="ep-perm-lbl">{b.lbl}</div>
-                <div className="ep-view-link"><IArr/> {b.sub}</div>
-              </div>
-            </div>
-          ))}
+function UserProfileContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'Overview';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Search & filter states for Activity Log
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAction, setSelectedAction] = useState('All Actions');
+  const [selectedModule, setSelectedModule] = useState('All Modules');
+
+  const filteredLogs = useMemo(() => {
+    return LOGGED_ACTIVITIES.filter(l => {
+      const matchesSearch = l.details.toLowerCase().includes(searchQuery.toLowerCase()) || l.module.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesAction = selectedAction === 'All Actions' || l.action === selectedAction;
+      const matchesModule = selectedModule === 'All Modules' || l.module === selectedModule;
+      return matchesSearch && matchesAction && matchesModule;
+    });
+  }, [searchQuery, selectedAction, selectedModule]);
+
+  const renderBadge = (status: 'granted' | 'restricted' | 'na') => {
+    if (status === 'granted') {
+      return (
+        <div className="perm-badge-circle granted">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
-      </div>
-
-      {/* Module Access */}
-      <div style={{marginBottom:22}}>
-        <div className="ep-module-sec-hdr">Module Access</div>
-        <div className="ep-module-sec-sub">Access level by module</div>
-        <table className="ep-module-table">
-          <thead>
-            <tr><th>Module</th><th>Access Level</th></tr>
-          </thead>
-          <tbody>
-            {MODULES.map(m=>(
-              <tr key={m.name}>
-                <td>
-                  <div className="ep-module-row-name">
-                    <div className="ep-mod-ic">{m.icon}</div>
-                    {m.name}
-                  </div>
-                </td>
-                <td><span className={`ep-access-badge ${m.cls}`}>{m.access}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <button className="ep-viewall-link">View all permissions <IArr/></button>
-      </div>
-
-      {/* Devices & Sessions */}
-      <div>
-        <div className="ep-module-sec-hdr">Devices &amp; Sessions</div>
-        <div className="ep-module-sec-sub">Active sessions for this user</div>
-        <table className="ep-device-table">
-          <thead>
-            <tr>
-              <th>Device / Browser</th>
-              <th>IP Address</th>
-              <th>Location</th>
-              <th>Last Active</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><div style={{display:'flex',alignItems:'center',gap:8}}><IMonitor/> Chrome on Windows</div></td>
-              <td>192.168.1.45</td>
-              <td>New Delhi, India</td>
-              <td>20 May 2024, 09:15 AM</td>
-              <td><span className="ep-current-badge">Current</span></td>
-            </tr>
-            <tr>
-              <td><div style={{display:'flex',alignItems:'center',gap:8}}><IPhone/> Chrome on Android</div></td>
-              <td>103.21.244.12</td>
-              <td>New Delhi, India</td>
-              <td>19 May 2024, 06:45 PM</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-        <button className="ep-viewall-link" style={{marginTop:10}}>View all sessions <IArr/></button>
-      </div>
-    </div>
-  );
-}
-
-/* ── Activity Log Tab ── */
-function ActivityLogTab() {
-  return (
-    <div style={{padding:'20px 24px'}}>
-      {/* Filters */}
-      <div className="ep-filter-row">
-        <div className="ep-search-wrap">
-          <span className="ep-search-ic"><ISearch/></span>
-          <input className="ep-search-inp" placeholder="Search activities..."/>
+      );
+    }
+    if (status === 'restricted') {
+      return (
+        <div className="perm-badge-circle restricted">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          </svg>
         </div>
-        <select className="ep-filter-sel"><option>All Actions</option><option>Login</option><option>Update</option><option>Create</option><option>Delete</option></select>
-        <select className="ep-filter-sel"><option>All Modules</option><option>Authentication</option><option>Riders</option><option>Battery</option></select>
-        <select className="ep-filter-sel"><option>All Performed By</option></select>
-        <div className="ep-date-filter"><ICal s={13}/> 15 May 2024 – 21 May 2024</div>
-        <button className="ep-reset-btn"><IRefresh/> Reset</button>
+      );
+    }
+    return (
+      <div className="perm-badge-circle na">
+        <svg width="8" height="2" viewBox="0 0 8 2" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <line x1="0" y1="1" x2="8" y2="1"/>
+        </svg>
       </div>
+    );
+  };
 
-      {/* Table */}
-      <table className="ep-act-table">
-        <thead>
-          <tr>
-            <th>Date &amp; Time ↕</th>
-            <th>Action</th>
-            <th>Module</th>
-            <th>Details</th>
-            <th>Performed By</th>
-            <th>IP Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ACTIVITY_LOG.map((a,i)=>(
-            <tr key={i}>
-              <td style={{whiteSpace:'nowrap',color:'#374151'}}>{a.dt}</td>
-              <td>
-                <span className={`ep-act-badge ${a.actionCls}`}>
-                  <ActionIcon action={a.action}/> {a.action}
-                </span>
-              </td>
-              <td>{a.module}</td>
-              <td style={{maxWidth:220,color:'#6B7280'}}>{a.detail}</td>
-              <td>
-                <div className="ep-act-user-row">
-                  <div className="ep-act-avatar">RS</div>
-                  <div>
-                    <div className="ep-act-user-name">Rohit Sharma</div>
-                    <div className="ep-act-user-id">USR-002</div>
-                  </div>
-                </div>
-              </td>
-              <td style={{fontFamily:'monospace',fontSize:12}}>{a.ip}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Pagination */}
-      <div className="ep-pag-row">
-        <span className="ep-pag-info">Showing 1 to 8 of 42 activities</span>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <div className="ep-pag-btns">
-            {['«','‹','1','2','3','...','6','›'].map((p,i)=>(
-              <button key={i} className={`ep-pg-btn ${p==='1'?'active':''}`}>{p}</button>
-            ))}
-          </div>
-          <select className="ep-per-page-sel"><option>10 / page</option><option>25 / page</option><option>50 / page</option></select>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Permissions Tab ── */
-function PermissionsTab() {
-  return (
-    <div style={{padding:'20px 24px'}}>
-      <div style={{fontSize:14,fontWeight:700,color:'#111827',marginBottom:12}}>Role-based Permissions</div>
-      {MODULES.map(m=>(
-        <div key={m.name} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 0',borderBottom:'1px solid #F3F4F6'}}>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <div className="ep-mod-ic">{m.icon}</div>
-            <div>
-              <div style={{fontSize:13,fontWeight:700,color:'#111827'}}>{m.name}</div>
-              <div style={{fontSize:12,color:'#9CA3AF'}}>Module permissions</div>
-            </div>
-          </div>
-          <span className={`ep-access-badge ${m.cls}`}>{m.access}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Additional Info Tab ── */
-function AdditionalInfoTab() {
-  return (
-    <div style={{padding:'0 24px'}}>
-      <style dangerouslySetInnerHTML={{__html:AttendanceCSS}}/>
-      <div style={{padding:'20px 0'}}>
-        <AttendanceContent/>
-      </div>
-    </div>
-  );
-}
-
-/* ── Right Panel ── */
-function RightPanel() {
-  const recentActivity = [
-    {ic:<ILogin/>, icBg:'#EEF2FF', icColor:'#4F46E5', text:'Logged in to the system', time:'20 May 2024, 09:15 AM'},
-    {ic:<IEdit/>,  icBg:'#DBEAFE', icColor:'#2563EB', text:'Updated rider assignment', time:'20 May 2024, 08:45 AM'},
-    {ic:<ICreate/>,icBg:'#DCFCE7', icColor:'#16A34A', text:'Generated zone performance report', time:'19 May 2024, 06:20 PM'},
-    {ic:<IEdit/>,  icBg:'#DBEAFE', icColor:'#2563EB', text:'Updated battery inventory', time:'19 May 2024, 04:05 PM'},
-    {ic:<ICreate/>,icBg:'#DCFCE7', icColor:'#16A34A', text:'Created support ticket', time:'18 May 2024, 11:30 AM'},
+  const QUICK_ACTIONS = [
+    {
+      name: 'View Role Details',
+      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    },
+    {
+      name: 'Compare with Other Roles',
+      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="5" y1="7" x2="19" y2="7"/><path d="M5 7L2 13h6l-3-6z"/><path d="M19 7l-3 6h6l-3-6z"/></svg>
+    },
+    {
+      name: 'Copy Permissions',
+      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    }
   ];
-  return (
-    <div className="ep-rp">
-      {/* Status */}
-      <div className="ep-rp-card">
-        <div className="ep-rp-body">
-          <div className="ep-rp-row"><span className="ep-rp-label">Status</span><span className="ep-active-badge">● Active</span></div>
-          <div className="ep-rp-row"><span className="ep-rp-label">Role</span><span className="ep-role-badge">Operations Manager</span></div>
-          <div className="ep-rp-row"><span className="ep-rp-label">Zone / Scope</span><span className="ep-rp-val">Connaught Place Zone</span></div>
-          <div className="ep-rp-row"><span className="ep-rp-label">Reporting To</span><span className="ep-rp-val">Akash Verma (Zone Admin)</span></div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="ep-rp-card">
-        <div className="ep-rp-hdr">
-          <span className="ep-rp-title">Recent Activity</span>
-          <button className="ep-viewall-btn">View All <IArr/></button>
-        </div>
-        <div className="ep-act-list">
-          {recentActivity.map((a,i)=>(
-            <div key={i} className="ep-act-item">
-              <div className="ep-act-ic-wrap" style={{background:a.icBg,color:a.icColor}}>{a.ic}</div>
-              <div>
-                <div className="ep-act-text">{a.text}</div>
-                <div className="ep-act-time">{a.time}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Security Information */}
-      <div className="ep-rp-card">
-        <div className="ep-rp-hdr"><span className="ep-rp-title">Security Information</span></div>
-        <div className="ep-rp-body">
-          <div className="ep-sec-row">
-            <span className="ep-sec-label">Password</span>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span className="ep-sec-val" style={{letterSpacing:2}}>•••••••••</span>
-              <button className="ep-sec-action">Reset Password</button>
-            </div>
-          </div>
-          <div className="ep-sec-row">
-            <span className="ep-sec-label">Two Factor Auth</span>
-            <span className="ep-enabled-badge">Enabled</span>
-          </div>
-          <div className="ep-sec-row">
-            <span className="ep-sec-label">Failed Login Attempts</span>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span className="ep-sec-val">0</span>
-              <button className="ep-sec-action">View Logs</button>
-            </div>
-          </div>
-          <div className="ep-sec-row">
-            <span className="ep-sec-label">Account Locked</span>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span className="ep-sec-val">No</span>
-              <button className="ep-sec-action">View Logs</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Account Information */}
-      <div className="ep-rp-card">
-        <div className="ep-rp-hdr"><span className="ep-rp-title">Account Information</span></div>
-        <div className="ep-rp-body">
-          <div className="ep-rp-row"><span className="ep-rp-label">Language</span><span className="ep-rp-val">English</span></div>
-          <div className="ep-rp-row"><span className="ep-rp-label">Date Format</span><span className="ep-rp-val">DD MMM YYYY</span></div>
-          <div className="ep-rp-row"><span className="ep-rp-label">Time Zone</span><span className="ep-rp-val" style={{fontSize:11.5}}>(UTC+5:30) Asia/Kolkata</span></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══ PAGE ═══ */
-export default function UserProfilePage() {
-  const [tab, setTab] = useState('Overview');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const toggleSidebar = () => setSidebarOpen(s => !s);
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html:CSS}}/>
-      <div className="ep-shell">
-        <Sidebar activePath="/users" isOpen={sidebarOpen} />
-        <div className="ep-main" style={{ marginLeft: sidebarOpen ? 230 : 0, width: sidebarOpen ? 'calc(100% - 230px)' : '100%' }}>
-          <TopBar/>
-          <div className="ep-page">
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <div className="ud-shell">
+        <Sidebar activePath="/users" />
+        <div className="ud-main">
+          <TopBar 
+            title="Hello, Akash" 
+            subtitle="Zone Admin" 
+            notificationCount={3}
+            showSearch={false}
+            hideZone={false}
+          />
+          <div className="ud-page">
 
-            {/* Breadcrumb */}
-            <div className="ep-bc">
-              <Link href="/">Settings</Link><span className="ep-bc-sep">›</span>
-              <a href="#">Users &amp; Roles</a><span className="ep-bc-sep">›</span>
-              <a href="#">Users</a><span className="ep-bc-sep">›</span>
-              <span className="ep-bc-cur">User Details</span>
+            {/* Breadcrumbs */}
+            <div className="ud-bc">
+              <a href="#">Settings</a>
+              <span className="ud-bc-sep">&gt;</span>
+              <a href="/users">Users &amp; Roles</a>
+              <span className="ud-bc-sep">&gt;</span>
+              {activeTab === 'Overview' ? (
+                <span className="ud-bc-cur">My Profile</span>
+              ) : (
+                <>
+                  <span 
+                    style={{ cursor: 'pointer', color: '#8B5CF6', fontWeight: 600 }} 
+                    onClick={() => setActiveTab('Overview')}
+                  >
+                    My Profile
+                  </span>
+                  <span className="ud-bc-sep">&gt;</span>
+                  <span className="ud-bc-cur">{activeTab}</span>
+                </>
+              )}
             </div>
 
-            {/* Title */}
-            <div className="ep-title-row">
+            {/* Action Row */}
+            <div className="ud-actions-row">
               <div>
-                <h1 className="ep-h1">User Details</h1>
-                <p className="ep-sub">View and manage user information, role, permissions and activity</p>
+                <h1 className="ud-h1">{activeTab === 'Permissions' ? 'My Permissions' : 'My Profile'}</h1>
+                <p className="bi-sub">
+                  {activeTab === 'Permissions' 
+                    ? 'Review your active system and security access rules.' 
+                    : 'Manage your personal profile, secure credentials, and login sessions.'}
+                </p>
               </div>
-              <div className="ep-btn-row">
-                <button className="ep-actions-btn"><IActions/> Actions ▾</button>
-                <button className="ep-edit-btn"><IEdit/> Edit User</button>
+              <div className="ud-btn-wrap">
+                {activeTab === 'Permissions' ? (
+                  <>
+                    <button className="ud-btn-outline" onClick={() => setActiveTab('Overview')}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                      Back to Profile
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="ud-btn-primary" onClick={() => router.push(`/users/add?edit=${USER_INFO.id}`)}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      Edit Profile
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Profile Header */}
-            <div className="ep-profile-card" style={{marginBottom:0,borderRadius:'14px 14px 0 0'}}>
-              <div className="ep-avatar-wrap"><AvatarSVG/></div>
-              <div className="ep-user-section">
-                <div className="ep-user-name-row">
-                  <span className="ep-user-name">Rohit Sharma</span>
-                  <span className="ep-active-badge">Active</span>
+            {/* Shared Profile Info card at top */}
+            <div className="ud-profile-card">
+              {/* Left Column: Avatar + Profile details */}
+              <div className="ud-profile-left">
+                <div className="ud-avatar-circle">
+                  {USER_INFO.avatar ? (
+                    <img src={USER_INFO.avatar} alt={`${USER_INFO.name} avatar`} />
+                  ) : (
+                    <div className={`usr-avatar ${USER_INFO.avatarCls}`} style={{ width: '100%', height: '100%', borderRadius: '50%', fontSize: '32px' }}>
+                      {USER_INFO.initials}
+                    </div>
+                  )}
                 </div>
-                <div className="ep-user-role">Operations Manager</div>
-                <div className="ep-user-meta">
-                  <div className="ep-meta-row"><span className="ep-meta-label">User ID</span><span className="ep-meta-val">USR-110</span></div>
-                  <div className="ep-meta-row"><IMail/><span style={{fontSize:13,color:'#374151'}}>rohit.sharma@evegah.com</span></div>
-                  <div className="ep-meta-row"><span className="ep-meta-label">Mobile Number</span></div>
-                  <div className="ep-meta-val phone">+91 87654 32109</div>
+                <div className="ud-profile-details">
+                  <div className="ud-profile-name-row">
+                    <span className="ud-profile-name">{USER_INFO.name}</span>
+                    <span className="badge-active">{USER_INFO.status}</span>
+                  </div>
+                  <div className="ud-profile-role">{USER_INFO.role}</div>
+                  <div className="ud-profile-meta-line" style={{ marginTop: '4px' }}>
+                    User ID: <span>{USER_INFO.id}</span>
+                  </div>
+                  <div className="ud-profile-meta-line">
+                    Email: <span>{USER_INFO.email}</span>
+                  </div>
+                  <div className="ud-profile-meta-line">
+                    Mobile: <span>{USER_INFO.mobile}</span>
+                  </div>
                 </div>
               </div>
-              <div className="ep-date-section">
-                {[
-                  {ic:<ICal/>,    label:'Date of Joining',       val:'12 May 2024, 09:15 AM'},
-                  {ic:<ILock/>,   label:'Last Login',            val:'20 May 2024, 09:15 AM'},
-                  {ic:<IUser/>,   label:'Created By',            val:'Akash Verma'},
-                  {ic:<IKey/>,    label:'Password Last Changed',  val:'12 May 2024, 09:16 AM'},
-                ].map(d=>(
-                  <div key={d.label} className="ep-date-row">
-                    <span className="ep-date-ic">{d.ic}</span>
-                    <div>
-                      <div className="ep-date-label">{d.label}</div>
-                      <div className="ep-date-val">{d.val}</div>
+
+              {/* Middle Column: Role and scope metadata */}
+              <div className="ud-profile-mid">
+                <div className="ud-mid-row">
+                  <span className="ud-mid-lbl">Role</span>
+                  <span className="badge-purple-role">{USER_INFO.role}</span>
+                </div>
+                <div className="ud-mid-row" style={{ marginTop: '4px' }}>
+                  <span className="ud-mid-lbl">Zone / Scope</span>
+                  <span className="ud-mid-val">{USER_INFO.zone}</span>
+                </div>
+                <div className="ud-mid-row" style={{ marginTop: '4px' }}>
+                  <span className="ud-mid-lbl">Reporting To</span>
+                  <span className="ud-mid-val">{USER_INFO.reportingTo}</span>
+                </div>
+              </div>
+
+              {/* Right Column: Permissions Summary box */}
+              <div className="ud-summary-card">
+                <div className="ud-summary-title">Permissions Summary</div>
+                <div className="ud-summary-grid">
+                  
+                  <div className="ud-summary-col">
+                    <span className="ud-summary-lbl">Total Modules</span>
+                    <div className="ud-summary-box purple">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                      <span>8</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Tabs + Content */}
-            <div className="ep-tabs-container">
-              {/* Tab Bar */}
-              <div style={{display:'flex',alignItems:'center',padding:'0 24px',borderBottom:'1px solid #E5E7EB'}}>
-                {['Overview','Permissions','Activity Log','Additional Info'].map(t=>(
-                  <div key={t} className={`ep-tab ${tab===t?'active':''}`} onClick={()=>setTab(t)}>{t}</div>
-                ))}
-              </div>
+                  <div className="ud-summary-col">
+                    <span className="ud-summary-lbl">Total Perms</span>
+                    <div className="ud-summary-box blue">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <span>48</span>
+                    </div>
+                  </div>
 
-              {/* Tab Content */}
-              <div className="ep-layout">
-                <div>
-                  {tab==='Overview'      && <OverviewTab/>}
-                  {tab==='Permissions'   && <PermissionsTab/>}
-                  {tab==='Activity Log'  && <ActivityLogTab/>}
-                  {tab==='Additional Info'&& <AdditionalInfoTab/>}
+                  <div className="ud-summary-col">
+                    <span className="ud-summary-lbl">Granted</span>
+                    <div className="ud-summary-box green">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span>48</span>
+                    </div>
+                  </div>
+
+                  <div className="ud-summary-col">
+                    <span className="ud-summary-lbl">Restricted</span>
+                    <div className="ud-summary-box red">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      <span>0</span>
+                    </div>
+                  </div>
+
                 </div>
-                <div style={{padding:'20px 16px 20px 0'}}><RightPanel/></div>
               </div>
             </div>
+
+            {/* Tab Swi Bar */}
+            <div className="ud-tabs">
+              {['Overview', 'Permissions', 'Activity Log'].map(t => (
+                <div 
+                  key={t} 
+                  className={`ud-tab ${activeTab === t ? 'active' : ''}`}
+                  onClick={() => setActiveTab(t)}
+                >
+                  {t}
+                </div>
+              ))}
+            </div>
+
+            {/* Content areas based on activeTab */}
+            {activeTab === 'Overview' && (
+              <div className="ud-two-col">
+                
+                {/* Left Column blocks */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  
+                  {/* Permissions summary grid */}
+                  <div className="ud-card">
+                    <div className="ud-card-tit">Permissions Summary</div>
+                    <div className="ud-perms-row">
+                      <div className="ud-perm-block">
+                        <div className="ud-perm-ic-box ic-purple">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                        </div>
+                        <div>
+                          <div className="ud-perm-num">8</div>
+                          <div className="ud-perm-lbl">Total Modules</div>
+                        </div>
+                      </div>
+                      <div className="ud-perm-block">
+                        <div className="ud-perm-ic-box ic-blue">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div>
+                          <div className="ud-perm-num">48</div>
+                          <div className="ud-perm-lbl">Permissions</div>
+                        </div>
+                      </div>
+                      <div className="ud-perm-block">
+                        <div className="ud-perm-ic-box ic-green">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div>
+                          <div className="ud-perm-num">48</div>
+                          <div className="ud-perm-lbl">Granted</div>
+                        </div>
+                      </div>
+                      <div className="ud-perm-block">
+                        <div className="ud-perm-ic-box ic-red">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        </div>
+                        <div>
+                          <div className="ud-perm-num">0</div>
+                          <div className="ud-perm-lbl">Restricted</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Module Access */}
+                  <div className="ud-card">
+                    <div className="ud-card-tit">
+                      <span>Module Access</span>
+                      <span className="table-viewall" onClick={() => setActiveTab('Permissions')}>View all permissions →</span>
+                    </div>
+                    <table className="ud-table">
+                      <thead>
+                        <tr>
+                          <th>Module</th>
+                          <th>Access Level</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {MODULES_SUMMARY.map((m, idx) => (
+                          <tr key={idx}>
+                            <td style={{ fontWeight: '700' }}>{m.name}</td>
+                            <td>
+                              <span className="status-check-green">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginRight: '3px' }}><polyline points="20 6 9 17 4 12"/></svg>
+                                {m.level}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Devices & Sessions */}
+                  <div className="ud-card">
+                    <div className="ud-card-tit">
+                      <span>Devices &amp; Sessions</span>
+                      <span className="table-viewall" onClick={() => alert('View all active sessions details...')}>View all sessions →</span>
+                    </div>
+                    <table className="ud-table">
+                      <thead>
+                        <tr>
+                          <th>Device / Browser</th>
+                          <th>IP Address</th>
+                          <th>Location</th>
+                          <th>Last Active</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {SESSIONS.map((s, idx) => (
+                          <tr key={idx}>
+                            <td style={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                              {s.device}
+                              {s.current && <span className="badge-green-filled">Current</span>}
+                            </td>
+                            <td>{s.ip}</td>
+                            <td>{s.location}</td>
+                            <td>{s.time}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                </div>
+
+                {/* Right Column blocks */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  
+                  {/* Recent activities */}
+                  <div className="ud-card">
+                    <div className="ud-card-hdr" style={{ padding: 0, borderBottom: 'none' }}>
+                      <span className="ud-card-tit" style={{ fontSize: '15px' }}>Recent Activity</span>
+                      <span className="table-viewall" onClick={() => setActiveTab('Activity Log')}>View All</span>
+                    </div>
+                    <div className="act-list" style={{ marginTop: '10px' }}>
+                      {LOGGED_ACTIVITIES.slice(0, 5).map((act, index) => (
+                        <div key={index} className="act-item">
+                          <span className="act-dot" />
+                          <div className="act-info">
+                            <div className="act-txt">{act.details}</div>
+                            <div className="act-time">{act.time}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Security Info */}
+                  <div className="ud-card">
+                    <div className="ud-card-tit">Security Information</div>
+                    <div className="ud-info-list">
+                      <div className="ud-info-row">
+                        <span className="ud-info-lbl">Password</span>
+                        <span className="ud-info-val" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>••••••••</span>
+                          <span className="ud-info-link" onClick={() => alert('Triggering reset password email...')}>Reset Password</span>
+                        </span>
+                      </div>
+                      <div className="ud-info-row">
+                        <span className="ud-info-lbl">Two Factor Authentication</span>
+                        <span className="badge-green-filled">Enabled</span>
+                      </div>
+                      <div className="ud-info-row">
+                        <span className="ud-info-lbl">Failed Login Attempts</span>
+                        <span className="ud-info-val" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>0</span>
+                          <span className="ud-info-link" onClick={() => alert('Opening security logs...')}>View Logs</span>
+                        </span>
+                      </div>
+                      <div className="ud-info-row">
+                        <span className="ud-info-lbl">Account Locked</span>
+                        <span className="ud-info-val" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>No</span>
+                          <span className="ud-info-link" onClick={() => alert('Opening account lock audit...')}>View Logs</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Information */}
+                  <div className="ud-card">
+                    <div className="ud-card-tit">Account Information</div>
+                    <div className="ud-info-list">
+                      <div className="ud-info-row">
+                        <span className="ud-info-lbl">Language</span>
+                        <span className="ud-info-val">English</span>
+                      </div>
+                      <div className="ud-info-row">
+                        <span className="ud-info-lbl">Date Format</span>
+                        <span className="ud-info-val">DD MMM YYYY</span>
+                      </div>
+                      <div className="ud-info-row">
+                        <span className="ud-info-lbl">Time Zone</span>
+                        <span className="ud-info-val">(UTC+05:30) Asia/Kolkata</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'Permissions' && (
+              <div className="ud-two-col">
+                
+                {/* Left: module permissions table */}
+                <div className="ud-card" style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>Module Permissions</h2>
+                      <p style={{ fontSize: '12.5px', color: '#64748B', margin: '4px 0 0 0', fontWeight: 500 }}>View and manage permissions for each module</p>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ position: 'absolute', left: '10px', color: '#94A3B8' }}>
+                          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input 
+                          type="text" 
+                          placeholder="Search modules..." 
+                          style={{ 
+                            padding: '8px 12px 8px 32px', 
+                            fontSize: '12.5px', 
+                            border: '1.5px solid #E2E8F0', 
+                            borderRadius: '8px', 
+                            outline: 'none',
+                            width: '180px',
+                            fontWeight: 500,
+                            color: '#0F172A'
+                          }} 
+                        />
+                      </div>
+                      <select 
+                        style={{ 
+                          padding: '8px 12px', 
+                          fontSize: '12.5px', 
+                          border: '1.5px solid #E2E8F0', 
+                          borderRadius: '8px', 
+                          background: '#fff', 
+                          fontWeight: 600, 
+                          color: '#475569',
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option>All Modules</option>
+                      </select>
+                      <button 
+                        style={{ 
+                          padding: '8px 14px', 
+                          fontSize: '12.5px', 
+                          fontWeight: 700, 
+                          border: '1.5px solid #E2E8F0', 
+                          borderRadius: '8px', 
+                          cursor: 'pointer',
+                          background: '#fff',
+                          color: '#475569'
+                        }}
+                      >
+                        Collapse All
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <table className="ud-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40%', textAlign: 'left' }}>Module</th>
+                        <th style={{ textAlign: 'center' }}>Access</th>
+                        <th style={{ textAlign: 'center' }}>Create</th>
+                        <th style={{ textAlign: 'center' }}>View</th>
+                        <th style={{ textAlign: 'center' }}>Edit</th>
+                        <th style={{ textAlign: 'center' }}>Delete</th>
+                        <th style={{ textAlign: 'center' }}>Export</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {PERM_ROWS.map(row => (
+                        <tr key={row.name}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <svg className="module-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                              <div className="module-icon-wrap" style={{ color: '#2a195c', background: '#F5F3FF', border: '1px solid #E9D5FF' }}>{row.icon}</div>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontWeight: 700, color: '#0F172A', fontSize: '13.5px' }}>{row.name}</span>
+                                <span style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>{row.subtitle}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>{renderBadge(row.access)}</td>
+                          <td style={{ textAlign: 'center' }}>{renderBadge(row.create)}</td>
+                          <td style={{ textAlign: 'center' }}>{renderBadge(row.view)}</td>
+                          <td style={{ textAlign: 'center' }}>{renderBadge(row.edit)}</td>
+                          <td style={{ textAlign: 'center' }}>{renderBadge(row.delete)}</td>
+                          <td style={{ textAlign: 'center' }}>{renderBadge(row.export)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  
+                  {/* Legend & Pagination Info */}
+                  <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>
+                      Showing 1 to 8 of 8 modules
+                    </div>
+                    <div className="perm-legend-row" style={{ display: 'flex', gap: '20px', borderTop: '1.5px solid #F1F5F9', paddingTop: '16px', marginTop: '4px' }}>
+                      <div className="legend-item" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: 600, color: '#475569' }}>
+                        {renderBadge('granted')} <span>Granted</span>
+                      </div>
+                      <div className="legend-item" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: 600, color: '#475569' }}>
+                        {renderBadge('restricted')} <span>Restricted</span>
+                      </div>
+                      <div className="legend-item" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: 600, color: '#475569' }}>
+                        {renderBadge('na')} <span>Not Applicable</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side widgets */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  
+                  {/* Role Info */}
+                  <div className="ud-card" style={{ padding: '24px' }}>
+                    <h2 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: '0 0 12px 0' }}>Role Information</h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div className="badge-purple-role" style={{ width: 'fit-content', padding: '4px 10px', fontSize: '12px' }}>{USER_INFO.role}</div>
+                      
+                      <div style={{ marginTop: '8px' }}>
+                        <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</div>
+                        <div style={{ fontSize: '13.5px', color: '#334155', lineHeight: '1.5', marginTop: '4px', fontWeight: 500 }}>
+                          Full platform administrator with complete configuration access scope.
+                        </div>
+                      </div>
+                      
+                      <div style={{ marginTop: '8px' }}>
+                        <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Role Statistics</div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1.5px solid #F1F5F9', paddingTop: '12px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', fontSize: '13px', fontWeight: 500 }}>
+                            <span style={{ color: '#64748B' }}>Users with this role</span>
+                            <span style={{ fontWeight: 700, color: '#0F172A', textAlign: 'right' }}>12</span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', fontSize: '13px', fontWeight: 500 }}>
+                            <span style={{ color: '#64748B' }}>Total permissions</span>
+                            <span style={{ fontWeight: 700, color: '#0F172A', textAlign: 'right' }}>48</span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', fontSize: '13px', fontWeight: 500 }}>
+                            <span style={{ color: '#64748B' }}>Granted permissions</span>
+                            <span style={{ fontWeight: 700, color: '#16A34A', textAlign: 'right' }}>48 (100.0%)</span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', fontSize: '13px', fontWeight: 500 }}>
+                            <span style={{ color: '#64748B' }}>Restricted permissions</span>
+                            <span style={{ fontWeight: 700, color: '#EF4444', textAlign: 'right' }}>0 (0.0%)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <h2 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: '8px 0 4px 0' }}>Quick Actions</h2>
+                    <div className="ud-qa-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {QUICK_ACTIONS.map(qa => (
+                        <div 
+                          key={qa.name} 
+                          className="ud-qa-item" 
+                          style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            cursor: 'pointer', 
+                            padding: '12px 16px', 
+                            border: '1.5px solid #E2E8F0', 
+                            borderRadius: '10px',
+                            background: '#fff',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onClick={() => {
+                            if (qa.name === 'Copy Permissions') {
+                              alert('Permissions Copied!');
+                            } else {
+                              alert(`${qa.name} clicked`);
+                            }
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ color: '#2a195c', display: 'flex', alignItems: 'center' }}>{qa.icon}</span>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#334155' }}>{qa.name}</span>
+                          </div>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: '#94A3B8' }}>
+                            <polyline points="9 18 15 12 9 6"/>
+                          </svg>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'Activity Log' && (
+              <div className="ud-card">
+                <div className="ud-card-tit">Activity Log</div>
+                
+                {/* Filters */}
+                <div className="act-filter-row">
+                  <div className="fr-search-wrap">
+                    <span className="fr-search-icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input 
+                      type="text" 
+                      placeholder="Search activities..." 
+                      className="fr-search-input"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <select className="bi-select" value={selectedAction} onChange={(e) => setSelectedAction(e.target.value)}>
+                    <option value="All Actions">All Actions</option>
+                    <option value="Login">Login</option>
+                    <option value="Update">Update</option>
+                    <option value="Create">Create</option>
+                    <option value="Delete">Delete</option>
+                  </select>
+                  <select className="bi-select" value={selectedModule} onChange={(e) => setSelectedModule(e.target.value)}>
+                    <option value="All Modules">All Modules</option>
+                    <option value="Authentication">Authentication</option>
+                    <option value="Settings">Settings</option>
+                    <option value="Users">Users</option>
+                    <option value="Franchise">Franchise</option>
+                  </select>
+                  <select className="bi-select">
+                    <option>All Performed By</option>
+                    <option>{USER_INFO.name}</option>
+                  </select>
+                  <div className="fr-search-wrap">
+                    <span className="fr-search-icon">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </span>
+                    <input type="text" className="fr-search-input" style={{ paddingLeft: '28px' }} value="15 May 2024 - 21 May 2024" readOnly />
+                  </div>
+                  <button className="bi-reset-btn" onClick={() => { setSearchQuery(''); setSelectedAction('All Actions'); setSelectedModule('All Modules'); }}>Reset</button>
+                </div>
+
+                {/* Table */}
+                <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
+                  <table className="ud-table">
+                    <thead>
+                      <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Action</th>
+                        <th>Module</th>
+                        <th>Details</th>
+                        <th>Performed By</th>
+                        <th>IP Address</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredLogs.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#94A3B8' }}>
+                            No log entries match the search criteria.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredLogs.map((log, idx) => (
+                          <tr key={idx}>
+                            <td>{log.time}</td>
+                            <td>
+                              <span className={`act-badge ${
+                                log.action === 'Login' ? 'act-b-login' :
+                                log.action === 'Update' ? 'act-b-update' :
+                                log.action === 'Create' ? 'act-b-create' : 'act-b-delete'
+                              }`}>
+                                {log.action}
+                              </span>
+                            </td>
+                            <td style={{ fontWeight: '700' }}>{log.module}</td>
+                            <td>{log.details}</td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div className={`usr-avatar ${log.avatarCls}`}>{log.performedByInitials}</div>
+                                <span style={{ fontWeight: '600' }}>{log.performedBy}</span>
+                              </div>
+                            </td>
+                            <td style={{ fontFamily: 'monospace' }}>{log.ip}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Footer pagination */}
+                <div className="bi-tcard-ft" style={{ border: 'none', background: 'none', padding: '10px 0 0' }}>
+                  <div className="bi-tcard-ft-lbl">Showing 1 to {filteredLogs.length} of 4 entries</div>
+                  <div className="bi-pg">
+                    <button className="bi-pgb" disabled>&lt;&lt;</button>
+                    <button className="bi-pgb" disabled>&lt;</button>
+                    <button className="bi-pgb cur">1</button>
+                    <button className="bi-pgb" disabled>2</button>
+                    <button className="bi-pgb" disabled>3</button>
+                    <span style={{ color: '#94A3B8', padding: '0 4px' }}>...</span>
+                    <button className="bi-pgb" disabled>6</button>
+                    <button className="bi-pgb" disabled>&gt;</button>
+                    <button className="bi-pgb" disabled>&gt;&gt;</button>
+                    <select className="bi-select" style={{ height: '28px', padding: '0 6px', fontSize: '12px', marginLeft: '6px' }}>
+                      <option>10 / page</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+            )}
 
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+export default function UserProfilePage() {
+  return (
+    <Suspense fallback={
+      <div style={{ padding: '24px', fontFamily: 'sans-serif', color: '#64748B' }}>
+        Loading Profile...
+      </div>
+    }>
+      <UserProfileContent />
+    </Suspense>
   );
 }
