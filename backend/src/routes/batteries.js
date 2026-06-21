@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
 
     queryText += ' ORDER BY battery_id ASC';
 
-    const result = await db.query(queryText, params);
+    const result = await db.bmsQuery(queryText, params);
     res.json(result.rows);
   } catch (err) {
     console.error('Fetch batteries error:', err);
@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
 router.get('/:battery_id', async (req, res) => {
   const { battery_id } = req.params;
   try {
-    const result = await db.query('SELECT * FROM batteries WHERE battery_id = $1', [battery_id]);
+    const result = await db.bmsQuery('SELECT * FROM batteries WHERE battery_id = $1', [battery_id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Battery not found' });
     }
@@ -51,7 +51,7 @@ router.get('/:battery_id', async (req, res) => {
 router.get('/:battery_id/logs', async (req, res) => {
   const { battery_id } = req.params;
   try {
-    const result = await db.query(`
+    const result = await db.bmsQuery(`
       SELECT * FROM battery_logs 
       WHERE battery_id = $1 
       ORDER BY created_at ASC 
@@ -148,7 +148,7 @@ router.post('/', async (req, res) => {
       RETURNING *
     `;
 
-    const batteryResult = await db.query(upsertQuery, [
+    const batteryResult = await db.bmsQuery(upsertQuery, [
       battery_id,
       status || 'idle',
       soc !== undefined && soc !== null ? parseInt(soc) : 100,
@@ -185,7 +185,7 @@ router.post('/', async (req, res) => {
       RETURNING *
     `;
 
-    await db.query(logQuery, [
+    await db.bmsQuery(logQuery, [
       battery_id,
       soc !== undefined && soc !== null ? parseInt(soc) : null,
       voltage !== undefined && voltage !== null ? parseFloat(voltage) : null,

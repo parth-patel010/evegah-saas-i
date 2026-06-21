@@ -12,6 +12,10 @@ class StorageService {
   static Future<String> loadServerIp() async {
     final ip = await _storage.read(key: 'server_ip');
     if (ip != null && ip.isNotEmpty) {
+      if (ip == '72.60.101.157') {
+        await saveServerIp('evegah.cloud');
+        return 'evegah.cloud';
+      }
       ApiConstants.hostIp = ip;
       return ip;
     }

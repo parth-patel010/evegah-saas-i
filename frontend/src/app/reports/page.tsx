@@ -106,7 +106,7 @@ const CSS = `
 .rep-kpis-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .rep-kpi-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.02); }
 .rep-kpi-ic { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ic-purple { background: #7C3AED; color: #fff; }
+.ic-purple { background: #8B5CF6; color: #fff; }
 .ic-green { background: #10B981; color: #fff; }
 .ic-blue { background: #3B82F6; color: #fff; }
 .ic-orange { background: #F97316; color: #fff; }

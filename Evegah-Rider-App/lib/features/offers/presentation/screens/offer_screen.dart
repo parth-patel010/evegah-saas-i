@@ -595,13 +595,22 @@ class _OfferScreenState extends State<OfferScreen> {
                   _buildDashedCodeBox(offer["code"]),
                   const SizedBox(height: 6),
                   GestureDetector(
-                    onTap: () => _copyCode(offer["code"]),
-                    child: const Text(
-                      "Copy Code",
-                      style: TextStyle(
-                        color: Color(0xFF4313B8),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                    onTap: () {
+                      Navigator.pop(context, offer);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4313B8),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        "Apply",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

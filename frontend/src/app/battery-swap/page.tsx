@@ -48,8 +48,8 @@ const CSS = `
 .bs-comp-hdr.removed { color: #B91C1C; }
 .bs-comp-hdr.added { color: #047857; }
 .bs-dot { width: 8px; height: 8px; border-radius: 50%; }
-.bs-dot.red { background: #EF4444; }
-.bs-dot.green { background: #22C55E; }
+.bs-dot.red { background: #EF4444; color: #fff; }
+.bs-dot.green { background: #10B981; color: #fff; }
 
 .bs-comp-list { display: flex; flex-direction: column; gap: 12px; }
 .bs-comp-item { display: flex; align-items: center; font-size: 13px; line-height: 1.5; }
@@ -58,13 +58,13 @@ const CSS = `
 .bs-comp-progress-wrap { flex: 1; display: flex; align-items: center; }
 .bs-progress-track { height: 6px; width: 120px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
 .bs-progress-fill { height: 100%; border-radius: 3px; }
-.bs-progress-fill.red { background: #EF4444; }
-.bs-progress-fill.orange { background: #F97316; }
-.bs-progress-fill.green { background: #22C55E; }
+.bs-progress-fill.red { background: #EF4444; color: #fff; }
+.bs-progress-fill.orange { background: #F97316; color: #fff; }
+.bs-progress-fill.green { background: #10B981; color: #fff; }
 
 .bs-comp-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; align-self: flex-start; margin-top: auto; }
-.bs-comp-badge.red { background: #FEE2E2; color: #EF4444; }
-.bs-comp-badge.green { background: #DCFCE7; color: #16A34A; }
+.bs-comp-badge.red { background: #EF4444; color: #fff; }
+.bs-comp-badge.green { background: #10B981; color: #fff; }
 
 .bs-exchange-circle { width: 44px; height: 44px; background: #FFF; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #2a195c; z-index: 10; margin: 0 -22px; flex-shrink: 0; cursor: pointer; transition: transform 0.2s; }
 .bs-exchange-circle:hover { transform: rotate(180deg); }
@@ -88,11 +88,11 @@ const CSS = `
 .bs-radio-btn-dot { width: 6px; height: 6px; background: #FFF; border-radius: 50%; }
 
 .bs-battery-badge { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-.bs-battery-badge.green { color: #16A34A; }
+.bs-battery-badge.green { background: #10B981; color: #fff; }
 .bs-shield-badge { display: flex; align-items: center; gap: 4px; font-weight: 600; color: #16A34A; }
 
 .bs-status-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
-.bs-status-badge.green { background: #DCFCE7; color: #16A34A; border: 1px solid #A7F3D0; }
+.bs-status-badge.green { background: #10B981; color: #fff; }
 
 .bs-select-btn { border: 1.5px solid #E2E8F0; background: #FFF; border-radius: 6px; padding: 6px 16px; font-size: 12px; font-weight: 700; color: #2a195c; cursor: pointer; transition: all 0.15s; min-width: 80px; text-align: center; }
 .bs-select-btn.selected { background: #FAF5FF; border-color: #E9D5FF; color: #7C3AED; cursor: default; }

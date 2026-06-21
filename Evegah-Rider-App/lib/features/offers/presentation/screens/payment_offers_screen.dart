@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../dashboard/presentation/widgets/vehicle_360_viewer.dart';
 import '../../../wallet/presentation/screens/payment_screen.dart';
 import '../../../rides/presentation/screen/booking_confirmed_screen.dart';
+import 'offer_screen.dart';
 
 class PaymentOffersScreen extends StatefulWidget {
   const PaymentOffersScreen({super.key});
@@ -12,6 +13,7 @@ class PaymentOffersScreen extends StatefulWidget {
 
 class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
   bool _isGet100Applied = false;
+  String _appliedCode = 'GET100';
   String _depositOption = 'Pay Now'; // 'Pay Now' or 'Pay Later'
   String _paymentMethod = 'Visa'; // 'Visa', 'Mastercard', or 'UPI'
   
@@ -22,6 +24,9 @@ class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
 
   double get _totalPayable {
     double total = _basePrice - _discount + _platformFee + _taxes;
+    if (_depositOption == 'Pay Now') {
+      total += 1000.00;
+    }
     return total < 0 ? 0 : total;
   }
 
@@ -30,6 +35,7 @@ class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
     super.initState();
     // Default apply the GET100 in mockup to reach ₹65.50 total
     _isGet100Applied = true;
+    _appliedCode = 'GET100';
     _discount = 100.00;
   }
 
@@ -68,7 +74,7 @@ class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
                       children: [
                         const Vehicle360Viewer(
                           vehicleModel: "EVegah Mink",
-                          imageAsset: "assets/mink.png",
+                          imageAsset: "assets/v1.webp",
                         ),
                         const SizedBox(height: 20),
                       ],
@@ -148,7 +154,7 @@ class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
                               color: const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Image.asset("assets/mink.png", fit: BoxFit.contain),
+                            child: Image.asset("assets/v1.webp", fit: BoxFit.contain),
                           ),
                           // 360 Badge
                           GestureDetector(
@@ -269,15 +275,15 @@ class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                "GET100",
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B)),
+                                _discount > 0 ? _appliedCode : "No coupon applied",
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B)),
                               ),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text(
-                                "Flat ₹100 off on your ride",
-                                style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500),
+                                _discount > 0 ? "Flat ₹${_discount.toStringAsFixed(0)} off on your ride" : "Apply offers and save more on your booking",
+                                style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
@@ -285,14 +291,21 @@ class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
                         TextButton(
                           onPressed: () {
                             setState(() {
-                              _isGet100Applied = !_isGet100Applied;
-                              _discount = _isGet100Applied ? 100.00 : 0.0;
+                              if (_discount > 0) {
+                                _discount = 0.0;
+                                _appliedCode = '';
+                                _isGet100Applied = false;
+                              } else {
+                                _isGet100Applied = true;
+                                _appliedCode = 'GET100';
+                                _discount = 100.00;
+                              }
                             });
                           },
                           child: Text(
-                            _isGet100Applied ? "Applied" : "Apply",
+                            _discount > 0 ? "Remove" : "Apply",
                             style: TextStyle(
-                              color: _isGet100Applied ? Colors.grey : const Color(0xFF15803D),
+                              color: _discount > 0 ? Colors.red : const Color(0xFF15803D),
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
@@ -303,7 +316,39 @@ class _PaymentOffersScreenState extends State<PaymentOffersScreen> {
                   ),
                   const SizedBox(height: 12),
                   InkWell(
-                    onTap: () {},
+                    onTap: () async {
+                      final selectedOffer = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OfferScreen()),
+                      );
+                      if (selectedOffer != null && selectedOffer is Map<String, dynamic>) {
+                        final code = selectedOffer["code"];
+                        setState(() {
+                          _appliedCode = code;
+                          _isGet100Applied = (code == "GET100");
+                          if (code == "GET100" || code == "WELCOME100") {
+                            _discount = 100.00;
+                          } else if (code == "RIDER50") {
+                            _discount = 50.00;
+                          } else if (code == "EVE50") {
+                            _discount = 82.75;
+                          } else if (code == "SCOOT20") {
+                            _discount = 33.10;
+                          } else if (code == "BIKE15") {
+                            _discount = 24.82;
+                          } else {
+                            _discount = 0.0;
+                          }
+                        });
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Offer '$code' applied successfully! 🎉"),
+                            backgroundColor: const Color(0xFF15803D),
+                          ),
+                        );
+                      }
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [

@@ -63,11 +63,11 @@ const CSS = `
 .pk-module-item:hover { background: #F8FAFC; }
 .pk-module-l { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
 .pk-module-ic { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ic-purple { background: #EEF2FF; color: #7C3AED; }
-.ic-green { background: #ECFDF5; color: #10B981; }
-.ic-orange { background: #FFF7ED; color: #F97316; }
-.ic-blue { background: #EFF6FF; color: #3B82F6; }
-.ic-gray { background: #F3F4F6; color: #6B7280; }
+.ic-purple { background: #8B5CF6; color: #fff; }
+.ic-green { background: #10B981; color: #fff; }
+.ic-orange { background: #F97316; color: #fff; }
+.ic-blue { background: #3B82F6; color: #fff; }
+.ic-gray { background: #6B7280; color: #fff; }
 
 .pk-module-meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .pk-module-name { font-size: 13px; font-weight: 700; color: #1E293B; }

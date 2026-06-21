@@ -75,11 +75,11 @@ const CSS = `
 .fr-stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
 .fr-stat-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
 .fr-stat-ic { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ic-purple { background: #EEF2FF; color: #4F46E5; }
-.ic-green { background: #ECFDF5; color: #10B981; }
-.ic-blue { background: #EFF6FF; color: #3B82F6; }
-.ic-orange { background: #FFF7ED; color: #F97316; }
-.ic-red { background: #FEF2F2; color: #EF4444; }
+.ic-purple { background: #8B5CF6; color: #fff; }
+.ic-green { background: #10B981; color: #fff; }
+.ic-blue { background: #3B82F6; color: #fff; }
+.ic-orange { background: #F97316; color: #fff; }
+.ic-red { background: #EF4444; color: #fff; }
 .fr-stat-info { min-width: 0; flex: 1; }
 .fr-stat-lbl { font-size: 11px; color: #6B7280; font-weight: 500; margin-bottom: 2px; }
 .fr-stat-val { font-size: 20px; font-weight: 800; color: #111827; line-height: 1; }

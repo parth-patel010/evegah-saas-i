@@ -171,7 +171,7 @@ const CSS = `
 .ro-settle-row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;}
 .ro-settle-label{color:#6B7280;}
 .ro-settle-val{font-weight:600;color:#111827;}
-.ro-settle-val.red{color:#EF4444;}
+.ro-settle-val.red { background: #EF4444; color: #fff; }
 .ro-settle-divider{height:1px;background:#E5E7EB;margin:6px 0;}
 .ro-settle-total-row{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;font-weight:800;color:#111827;}
 .ro-settle-total-val{font-size:16px;font-weight:800;color:#EF4444;}
@@ -196,7 +196,7 @@ const CSS = `
 .ro-rs-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;}
 .ro-rs-label{color:#6B7280;}
 .ro-rs-val{font-weight:600;color:#111827;}
-.ro-rs-val.red{color:#EF4444;}
+.ro-rs-val.red { background: #EF4444; color: #fff; }
 .ro-rs-val.total{font-size:15px;font-weight:800;color:#EF4444;}
 .ro-rs-val.refund{font-size:16px;font-weight:800;color:#111827;}
 .ro-returned-badge{background:#DCFCE7;color:#16A34A;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;}
@@ -230,8 +230,8 @@ const CSS = `
 .ro-rp-row:last-child{border-bottom:none;}
 .ro-rp-label{color:#6B7280;}
 .ro-rp-val{font-weight:600;color:#111827;text-align:right;}
-.ro-rp-val.red{color:#EF4444;}
-.ro-rp-val.green{color:#22C55E;}
+.ro-rp-val.red { background: #EF4444; color: #fff; }
+.ro-rp-val.green { background: #10B981; color: #fff; }
 .ro-status-done{background:#EEF2FF;color:#4F46E5;border-radius:5px;font-size:10.5px;font-weight:700;padding:2px 7px;}
 .ro-status-active{background:#DCFCE7;color:#16A34A;border-radius:5px;font-size:10.5px;font-weight:700;padding:2px 7px;}
 .ro-status-completed{background:#F3F4F6;color:#6B7280;border-radius:5px;font-size:10.5px;font-weight:700;padding:2px 7px;}

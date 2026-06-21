@@ -463,7 +463,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildStatColumn(IconData icon, String val, String lbl) {
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFF4313B8), size: 20),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF4313B8).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: const Color(0xFF4313B8), size: 20),
+        ),
         const SizedBox(height: 6),
         Text(val, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.black)),
         const SizedBox(height: 2),
@@ -475,7 +482,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildStatColumnWithInfo(IconData icon, String val, String lbl) {
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFF4313B8), size: 20),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF4313B8).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: const Color(0xFF4313B8), size: 20),
+        ),
         const SizedBox(height: 6),
         Text(val, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.black)),
         const SizedBox(height: 2),
@@ -498,7 +512,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFF4313B8), size: 20),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4313B8).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: const Color(0xFF4313B8), size: 20),
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Text(

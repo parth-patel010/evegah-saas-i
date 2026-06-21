@@ -420,14 +420,14 @@ class _BatteryManagementScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Enter the backend Express server IP address (e.g. 192.168.1.15):',
+              'Enter the backend server IP or domain (e.g. evegah.cloud or 192.168.1.15):',
               style: TextStyle(fontSize: 11, color: Color(0xFF8C93A8)),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
               decoration: InputDecoration(
-                hintText: 'e.g. 192.168.1.15',
+                hintText: 'e.g. evegah.cloud or 192.168.1.15',
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
