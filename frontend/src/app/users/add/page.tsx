@@ -32,8 +32,8 @@ const CSS = `
 .ua-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.02); }
 .ua-sec-title { font-size: 14.5px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 10px; margin: 0; }
 .ua-icon-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ua-icon-circle.purple { background: #F5F3FF; color: #7C3AED; }
-.ua-icon-circle.blue { background: #EFF6FF; color: #2563EB; }
+.ua-icon-circle.purple { background: #8B5CF6; color: #fff; }
+.ua-icon-circle.blue { background: #3B82F6; color: #fff; }
 .ua-icon-circle.pink { background: #FDF2F8; color: #EC4899; }
 
 /* Form inputs */
@@ -57,8 +57,8 @@ const CSS = `
 .ua-status-card.active { border-color: #7C3AED; background: #FAF5FF; }
 .ua-status-card-text { font-size: 13px; font-weight: 700; color: #1E293B; }
 .ua-status-indicator { width: 8px; height: 8px; border-radius: 50%; }
-.ua-status-indicator.green { background: #16A34A; }
-.ua-status-indicator.red { background: #EF4444; }
+.ua-status-indicator.green { background: #10B981; color: #fff; }
+.ua-status-indicator.red { background: #EF4444; color: #fff; }
 .ua-status-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #CBD5E1; display: flex; align-items: center; justify-content: center; margin-left: auto; }
 .ua-status-radio.active { border-color: #7C3AED; background: #7C3AED; }
 .ua-status-radio-dot { width: 6px; height: 6px; background: #fff; border-radius: 50%; }

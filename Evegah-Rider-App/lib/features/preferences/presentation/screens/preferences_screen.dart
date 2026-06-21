@@ -123,7 +123,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       secondary: Container(
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1452).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Icon(icon, color: const Color(0xFF1E1452), size: 22),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),

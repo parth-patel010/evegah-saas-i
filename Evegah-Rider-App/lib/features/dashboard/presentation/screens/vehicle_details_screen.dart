@@ -4,8 +4,9 @@ import 'select_date_time_screen.dart';
 
 class VehicleDetailsScreen extends StatefulWidget {
   final String vehicleId; 
+  final String? zone;
 
-  const VehicleDetailsScreen({super.key, required this.vehicleId});
+  const VehicleDetailsScreen({super.key, required this.vehicleId, this.zone});
 
   @override
   State<VehicleDetailsScreen> createState() => _VehicleDetailsScreenState();
@@ -19,10 +20,16 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   Map<String, dynamic>? _vehicleData;
   int _sliderIndex = 0;
   String _rideType = "Daily"; // Daily or Subscription
+  late String _currentZone;
 
   @override
   void initState() {
     super.initState();
+    // Default to the passed zone, or check vehicle/defaults
+    _currentZone = widget.zone ?? "Koramangala Zone, Bangalore";
+    if (_currentZone == "Daman Zone") {
+      _rideType = "Hourly";
+    }
     _fetchLiveVehicleDetails();
   }
 
@@ -136,12 +143,10 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     
     final String modelLower = model.toLowerCase();
     final List<String> vehicleImages = modelLower.contains("mink")
-        ? ["assets/mink.png", "assets/v1.webp", "assets/v2.webp"]
-        : modelLower.contains("e1")
-            ? ["assets/mink.png", "assets/v1.webp", "assets/v2.webp"]
-            : modelLower.contains("e2")
-                ? ["assets/v1.webp", "assets/v2.webp", "assets/mink.png"]
-                : ["assets/v2.webp", "assets/v1.webp", "assets/mink.png"];
+        ? ["assets/v1.webp", "assets/city.png", "assets/v2.webp"]
+        : modelLower.contains("city")
+            ? ["assets/city.png", "assets/v1.webp", "assets/v2.webp"]
+            : ["assets/v2.webp", "assets/v1.webp", "assets/city.png"];
 
     double todaysRate = 20.00;
     if (_vehicleData!['farePlanData'] != null && _vehicleData!['farePlanData'].isNotEmpty) {
@@ -237,9 +242,8 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
                                 itemBuilder: (context, index) {
                                   return Padding(
                                     padding: const EdgeInsets.all(12.0),
-                                    child: Image.asset(
-                                      vehicleImages[index],
-                                      fit: BoxFit.contain,
+                                    child: _RunningDetailVehicle(
+                                      imagePath: vehicleImages[index],
                                     ),
                                   );
                                 },
@@ -296,75 +300,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
                   // --- CHOOSE YOUR RIDE ---
                   const Text("Choose your ride", style: TextStyle(color: Color(0xFF1E293B), fontSize: 15, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      // Daily Card
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _rideType = "Daily"),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: _rideType == "Daily" ? const Color(0xFF4313B8) : const Color(0xFFE2E8F0), width: 1.5),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.access_time, color: _rideType == "Daily" ? const Color(0xFF4313B8) : Colors.grey, size: 22),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
-                                      Text("Daily Drive", style: TextStyle(color: Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 2),
-                                      Text("4+ Hours (Ideal)", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                                if (_rideType == "Daily")
-                                  const Icon(Icons.check_circle, color: Color(0xFF4313B8), size: 18),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Subscription Card
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _rideType = "Subscription"),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: _rideType == "Subscription" ? const Color(0xFF4313B8) : const Color(0xFFE2E8F0), width: 1.5),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.calendar_month, color: _rideType == "Subscription" ? const Color(0xFF4313B8) : Colors.grey, size: 22),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
-                                      Text("Subscription", style: TextStyle(color: Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 2),
-                                      Text("7+ Days bookings", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                                if (_rideType == "Subscription")
-                                  const Icon(Icons.check_circle, color: Color(0xFF4313B8), size: 18),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildPackageSelectionWidget(),
                   const SizedBox(height: 20),
 
                   // --- SELECT DATE & TIME DISPLAY CARD ---
@@ -416,18 +352,18 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text("Pickup Zone", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
-                              SizedBox(height: 4),
+                            children: [
+                              const Text("Pickup Zone", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
                               Text(
-                                "Connaught Place Zone, New Delhi",
-                                style: TextStyle(color: Color(0xFF1E293B), fontSize: 12, fontWeight: FontWeight.bold),
+                                _currentZone,
+                                style: const TextStyle(color: Color(0xFF1E293B), fontSize: 12, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: _showZoneSelectionBottomSheet,
                           child: const Text("Change", style: TextStyle(color: Color(0xFF4313B8), fontWeight: FontWeight.bold, fontSize: 12)),
                         ),
                       ],
@@ -458,8 +394,15 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Text("₹${todaysRate.toStringAsFixed(0)}", style: const TextStyle(color: Color(0xFF1E293B), fontSize: 22, fontWeight: FontWeight.bold)),
-                          const SizedBox(width: 6),
+                          Text(
+                            _currentZone == "Daman Zone"
+                                ? "₹${_calculatedRate.toStringAsFixed(0)}/hr"
+                                : _currentZone == "Vadodara Gotri Zone"
+                                    ? "₹${_calculatedRate.toStringAsFixed(0)}${_rideType == 'Daily' ? '/day' : _rideType == 'Weekly' ? '/week' : '/month'}"
+                                    : "₹${_calculatedRate.toStringAsFixed(0)}${_rideType == 'Subscription' ? '/week' : '/hr'}",
+                            style: const TextStyle(color: Color(0xFF1E293B), fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 4),
                           const Icon(Icons.info_outline, color: Colors.grey, size: 14),
                         ],
                       ),
@@ -520,10 +463,352 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     );
   }
 
+  double get _calculatedRate {
+    if (_currentZone == "Daman Zone") {
+      return 100.0;
+    } else if (_currentZone == "Vadodara Gotri Zone") {
+      if (_rideType == "Weekly") {
+        return 1800.0;
+      } else if (_rideType == "Monthly") {
+        return 6000.0;
+      } else {
+        return 300.0; // Daily
+      }
+    } else {
+      double baseRate = 20.0;
+      if (_vehicleData != null && _vehicleData!['farePlanData'] != null && _vehicleData!['farePlanData'].isNotEmpty) {
+        baseRate = double.tryParse(_vehicleData!['farePlanData'][0]['todaysRate']?.toString() ?? '20') ?? 20.0;
+      }
+      if (_rideType == "Subscription") {
+        return 1500.0;
+      } else {
+        return baseRate;
+      }
+    }
+  }
+
+  void _showZoneSelectionBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Select Pickup Zone",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+            ),
+            const SizedBox(height: 16),
+            _buildZoneOption("Vadodara Gotri Zone", "Akshar Chowk, Vadodara, Gujarat"),
+            const Divider(),
+            _buildZoneOption("Daman Zone", "Devka Beach Road, Daman"),
+            const Divider(),
+            _buildZoneOption("Koramangala Zone, Bangalore", "80 Feet Road, Koramangala, Bengaluru"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildZoneOption(String zoneName, String address) {
+    final isSelected = _currentZone == zoneName;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _currentZone = zoneName;
+          if (zoneName == "Daman Zone") {
+            _rideType = "Hourly";
+          } else if (zoneName == "Vadodara Gotri Zone") {
+            _rideType = "Daily";
+          } else {
+            _rideType = "Daily";
+          }
+        });
+        Navigator.pop(context);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.location_on, color: isSelected ? const Color(0xFF4313B8) : Colors.grey, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(zoneName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isSelected ? const Color(0xFF4313B8) : const Color(0xFF1E293B))),
+                  const SizedBox(height: 2),
+                  Text(address, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: Color(0xFF4313B8), size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPackageSelectionWidget() {
+    if (_currentZone == "Daman Zone") {
+      return GestureDetector(
+        onTap: () => setState(() => _rideType = "Hourly"),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF4313B8), width: 1.5),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.bolt, color: Color(0xFF4313B8), size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text("Hourly package", style: TextStyle(color: Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 2),
+                    Text("₹100/hr flat rate", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.check_circle, color: Color(0xFF4313B8), size: 18),
+            ],
+          ),
+        ),
+      );
+    } else if (_currentZone == "Vadodara Gotri Zone") {
+      return Column(
+        children: [
+          Row(
+            children: [
+              _buildGotriPackageCard("Daily", "Daily Pack", "₹300/day"),
+              const SizedBox(width: 12),
+              _buildGotriPackageCard("Weekly", "Weekly Pack", "₹1,800/week"),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildGotriPackageCard("Monthly", "Monthly Pack", "₹6,000/month"),
+              const SizedBox(width: 12),
+              const Spacer(),
+            ],
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _rideType = "Daily"),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _rideType == "Daily" ? const Color(0xFF4313B8) : const Color(0xFFE2E8F0), width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.access_time, color: _rideType == "Daily" ? const Color(0xFF4313B8) : Colors.grey, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text("Daily Drive", style: TextStyle(color: Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 2),
+                          Text("4+ Hours (Ideal)", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                    if (_rideType == "Daily")
+                      const Icon(Icons.check_circle, color: Color(0xFF4313B8), size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _rideType = "Subscription"),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _rideType == "Subscription" ? const Color(0xFF4313B8) : const Color(0xFFE2E8F0), width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_month, color: _rideType == "Subscription" ? const Color(0xFF4313B8) : Colors.grey, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text("Subscription", style: TextStyle(color: Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 2),
+                          Text("7+ Days bookings", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                    if (_rideType == "Subscription")
+                      const Icon(Icons.check_circle, color: Color(0xFF4313B8), size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  Widget _buildGotriPackageCard(String type, String title, String subtitle) {
+    final isSelected = _rideType == type;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _rideType = type),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isSelected ? const Color(0xFF4313B8) : const Color(0xFFE2E8F0), width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                type == "Daily"
+                    ? Icons.today
+                    : type == "Weekly"
+                        ? Icons.date_range
+                        : Icons.calendar_month,
+                color: isSelected ? const Color(0xFF4313B8) : Colors.grey,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(color: Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                const Icon(Icons.check_circle, color: Color(0xFF4313B8), size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _openDatePicker() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SelectDateTimeScreen()),
+    );
+  }
+}
+
+class _RunningDetailVehicle extends StatefulWidget {
+  final String imagePath;
+  const _RunningDetailVehicle({required this.imagePath, super.key});
+
+  @override
+  State<_RunningDetailVehicle> createState() => _RunningDetailVehicleState();
+}
+
+class _RunningDetailVehicleState extends State<_RunningDetailVehicle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _driveIn;
+  late Animation<double> _vibrate;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+
+    _driveIn = Tween<Offset>(begin: const Offset(-1.2, 0.0), end: Offset.zero).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _vibrate = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: -1.0), weight: 25),
+      TweenSequenceItem(tween: Tween<double>(begin: -1.0, end: 1.0), weight: 25),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: -0.5), weight: 25),
+      TweenSequenceItem(tween: Tween<double>(begin: -0.5, end: 0.0), weight: 25),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 1.0, curve: Curves.linear),
+      ),
+    );
+
+    _controller.forward();
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _controller.repeat(reverse: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _RunningDetailVehicle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imagePath != widget.imagePath) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final offset = _driveIn.value;
+        final dy = _vibrate.value;
+        return FractionalTranslation(
+          translation: offset,
+          child: Transform.translate(
+            offset: Offset(0.0, dy),
+            child: child,
+          ),
+        );
+      },
+      child: Image.asset(
+        widget.imagePath,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }

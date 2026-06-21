@@ -81,11 +81,11 @@ const CSS = `
 .co-stat-val { font-size: 22px; font-weight: 800; color: #111827; line-height: 1; margin: 4px 0; }
 .co-stat-sub { font-size: 10.5px; color: #9CA3AF; margin-top: 1px; }
 
-.ic-green { background: #E8F5E9; color: #2E7D32; }
-.ic-emerald { background: #E0F2F1; color: #00695C; }
-.ic-blue { background: #E3F2FD; color: #1565C0; }
-.ic-orange { background: #FFF3E0; color: #E65100; }
-.ic-purple { background: #F3E8FF; color: #6D28D9; }
+.ic-green { background: #10B981; color: #fff; }
+.ic-emerald { background: #059669; color: #fff; }
+.ic-blue { background: #3B82F6; color: #fff; }
+.ic-orange { background: #F97316; color: #fff; }
+.ic-purple { background: #8B5CF6; color: #fff; }
 
 /* 3-Column Layout Grid for Row 2 */
 .co-row-2-grid { display: grid; grid-template-columns: 1.15fr 0.85fr 1fr; gap: 20px; }

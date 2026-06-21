@@ -31,10 +31,10 @@ const CSS = `
 .re-sc-per { font-size: 10.5px; color: #9CA3AF; margin-top: 1px; }
 .re-sc-val { font-size: 24px; font-weight: 800; color: #111827; line-height: 1; margin: 6px 0; }
 
-.ic-purple { background: #F3E8FF; color: #6D28D9; }
-.ic-green { background: #DCFCE7; color: #16A34A; }
-.ic-orange { background: #FFEDD5; color: #C2410C; }
-.ic-blue { background: #DBEAFE; color: #1D4ED8; }
+.ic-purple { background: #8B5CF6; color: #fff; }
+.ic-green { background: #10B981; color: #fff; }
+.ic-orange { background: #F97316; color: #fff; }
+.ic-blue { background: #3B82F6; color: #fff; }
 
 /* Directory Container Card */
 .re-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.02); overflow: hidden; display: flex; flex-direction: column; }

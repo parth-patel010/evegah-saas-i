@@ -72,10 +72,10 @@ const CSS = `
 .usr-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 4px; }
 .usr-stat-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.02); }
 .usr-stat-ic { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ic-purple { background: #FAF5FF; color: #7C3AED; }
-.ic-green { background: #ECFDF5; color: #10B981; }
-.ic-orange { background: #FFF7ED; color: #F97316; }
-.ic-blue { background: #EFF6FF; color: #3B82F6; }
+.ic-purple { background: #8B5CF6; color: #fff; }
+.ic-green { background: #10B981; color: #fff; }
+.ic-orange { background: #F97316; color: #fff; }
+.ic-blue { background: #3B82F6; color: #fff; }
 
 .usr-stat-info { flex: 1; display: flex; flex-direction: column; }
 .usr-stat-lbl { font-size: 11.5px; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -118,10 +118,10 @@ const CSS = `
 
 .usr-profile-cell { display: flex; align-items: center; gap: 10px; }
 .usr-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-.usr-avatar.purple { background: #F5F3FF; color: #7C3AED; border: 1px solid #E9D5FF; }
-.usr-avatar.green { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
-.usr-avatar.orange { background: #FFF7ED; color: #D97706; border: 1px solid #FFEDD5; }
-.usr-avatar.blue { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+.usr-avatar.purple { background: #8B5CF6; color: #fff; }
+.usr-avatar.green { background: #10B981; color: #fff; }
+.usr-avatar.orange { background: #F97316; color: #fff; }
+.usr-avatar.blue { background: #3B82F6; color: #fff; }
 .usr-avatar.pink { background: #FDF2F8; color: #DB2777; border: 1px solid #FBCFE8; }
 
 .usr-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
@@ -130,10 +130,10 @@ const CSS = `
 
 /* Custom Role badges */
 .role-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; border: 1px solid transparent; }
-.role-badge.purple { background: #F5F3FF; color: #7E22CE; border-color: #E9D5FF; }
-.role-badge.blue { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
-.role-badge.orange { background: #FFF7ED; color: #C2410C; border-color: #FFEDD5; }
-.role-badge.teal { background: #F0FDFA; color: #0F766E; border-color: #CCFBF1; }
+.role-badge.purple { background: #8B5CF6; color: #fff; }
+.role-badge.blue { background: #3B82F6; color: #fff; }
+.role-badge.orange { background: #F97316; color: #fff; }
+.role-badge.teal { background: #14B8A6; color: #fff; }
 .role-badge.indigo { background: #EEF2FF; color: #4338CA; border-color: #E0E7FF; }
 
 /* Action Buttons */
@@ -383,104 +383,6 @@ export default function UsersPage({ defaultTab = 0 }: { defaultTab?: number } = 
               </div>
             </div>
 
-            {/* KPI Stats cards */}
-            <div className="usr-stats-row">
-              <div className="usr-stat-card">
-                <div className="usr-stat-ic ic-purple">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#purpleGrad)" strokeWidth="2.2">
-                    <defs>
-                      <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#7C3AED" />
-                        <stop offset="100%" stopColor="#C084FC" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <div className="usr-stat-info">
-                  <span className="usr-stat-lbl">Total Users</span>
-                  <span className="usr-stat-val"><AnimatedCount value={users.length} /></span>
-                  <div className="usr-growth up">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
-                    <span>Active members live</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="usr-stat-card">
-                <div className="usr-stat-ic ic-green">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#greenGrad)" strokeWidth="2.2">
-                    <defs>
-                      <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#10B981" />
-                        <stop offset="100%" stopColor="#34D399" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <polyline points="16 11 18 13 22 9" />
-                  </svg>
-                </div>
-                <div className="usr-stat-info">
-                  <span className="usr-stat-lbl">Active Users</span>
-                  <span className="usr-stat-val"><AnimatedCount value={users.filter(u => u.status === 'Active').length} /></span>
-                  <div className="usr-growth up">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
-                    <span>System online</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="usr-stat-card">
-                <div className="usr-stat-ic ic-orange">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#orangeGrad)" strokeWidth="2.2">
-                    <defs>
-                      <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#F97316" />
-                        <stop offset="100%" stopColor="#FDE047" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                </div>
-                <div className="usr-stat-info">
-                  <span className="usr-stat-lbl">Inactive Users</span>
-                  <span className="usr-stat-val"><AnimatedCount value={users.filter(u => u.status === 'Inactive').length} /></span>
-                  <div className="usr-growth down">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
-                    <span>Suspended / offline</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="usr-stat-card">
-                <div className="usr-stat-ic ic-blue">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#blueGrad)" strokeWidth="2.2">
-                    <defs>
-                      <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#3B82F6" />
-                        <stop offset="100%" stopColor="#93C5FD" />
-                      </linearGradient>
-                    </defs>
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                </div>
-                <div className="usr-stat-info">
-                  <span className="usr-stat-lbl">Total Roles</span>
-                  <span className="usr-stat-val"><AnimatedCount value={roles.length} /></span>
-                  <div className="usr-growth neutral">
-                    <span>Access templates</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Tab Swi & Actions */}
             <div className="usr-tab-row">
               <div className="usr-tabs">
@@ -522,6 +424,64 @@ export default function UsersPage({ defaultTab = 0 }: { defaultTab?: number } = 
             {activeSection === 'users' ? (
               <div id="users-section" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 
+                {/* Users KPI Stats cards */}
+                <div className="usr-stats-row">
+                  <div className="usr-stat-card">
+                    <div className="usr-stat-ic ic-purple">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    </div>
+                    <div className="usr-stat-info">
+                      <span className="usr-stat-lbl">Total Users</span>
+                      <span className="usr-stat-val"><AnimatedCount value={users.length} /></span>
+                      <div className="usr-growth up">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
+                        <span>Active members live</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="usr-stat-card">
+                    <div className="usr-stat-ic ic-green">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <polyline points="16 11 18 13 22 9" />
+                      </svg>
+                    </div>
+                    <div className="usr-stat-info">
+                      <span className="usr-stat-lbl">Active Users</span>
+                      <span className="usr-stat-val"><AnimatedCount value={users.filter(u => u.status === 'Active').length} /></span>
+                      <div className="usr-growth up">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
+                        <span>System online</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="usr-stat-card">
+                    <div className="usr-stat-ic ic-orange">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                    </div>
+                    <div className="usr-stat-info">
+                      <span className="usr-stat-lbl">Inactive Users</span>
+                      <span className="usr-stat-val"><AnimatedCount value={users.filter(u => u.status === 'Inactive').length} /></span>
+                      <div className="usr-growth down">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
+                        <span>Suspended / offline</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Users filters */}
                 <div className="usr-filter-card">
                   <div className="usr-filter-grid">
@@ -677,6 +637,56 @@ export default function UsersPage({ defaultTab = 0 }: { defaultTab?: number } = 
               </div>
             ) : (
               <div id="roles-section" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                {/* Roles KPI Stats cards */}
+                <div className="usr-stats-row">
+                  <div className="usr-stat-card">
+                    <div className="usr-stat-ic ic-blue">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </div>
+                    <div className="usr-stat-info">
+                      <span className="usr-stat-lbl">Total Roles</span>
+                      <span className="usr-stat-val"><AnimatedCount value={roles.length} /></span>
+                      <div className="usr-growth neutral">
+                        <span>Access templates</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="usr-stat-card">
+                    <div className="usr-stat-ic ic-green">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      </svg>
+                    </div>
+                    <div className="usr-stat-info">
+                      <span className="usr-stat-lbl">Active Roles</span>
+                      <span className="usr-stat-val"><AnimatedCount value={roles.filter(r => r.users_count > 0).length} /></span>
+                      <div className="usr-growth up">
+                        <span>Roles in use</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="usr-stat-card">
+                    <div className="usr-stat-ic ic-orange">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                    </div>
+                    <div className="usr-stat-info">
+                      <span className="usr-stat-lbl">Unused Roles</span>
+                      <span className="usr-stat-val"><AnimatedCount value={roles.filter(r => r.users_count === 0).length} /></span>
+                      <div className="usr-growth neutral">
+                        <span>Ready to assign</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Roles Table card */}
                 <div className="usr-tcard" style={{ marginBottom: '40px' }}>
                   <table className="usr-dt">

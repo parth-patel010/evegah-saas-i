@@ -76,11 +76,11 @@ const CSS = `
 .bi-stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
 .bi-stat-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.02); position: relative; }
 .bi-stat-ic { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ic-purple { background: #F5F3FF; color: #7C3AED; }
-.ic-green { background: #ECFDF5; color: #059669; }
-.ic-orange { background: #FFF7ED; color: #EA580C; }
-.ic-blue { background: #EFF6FF; color: #2563EB; }
-.ic-red { background: #FEE2E2; color: #DC2626; }
+.ic-purple { background: #8B5CF6; color: #fff; }
+.ic-green { background: #10B981; color: #fff; }
+.ic-orange { background: #F97316; color: #fff; }
+.ic-blue { background: #3B82F6; color: #fff; }
+.ic-red { background: #EF4444; color: #fff; }
 
 .bi-stat-info { min-width: 0; flex: 1; }
 .bi-stat-lbl { font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 2px; }

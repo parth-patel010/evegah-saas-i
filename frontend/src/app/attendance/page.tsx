@@ -77,7 +77,7 @@ const CSS = `
 .at-stat-item{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;padding-bottom:2px;}
 .at-stat-label{color:#6B7280;display:flex;align-items:center;gap:6px;}
 .at-stat-val{font-weight:700;color:#111827;}
-.at-stat-val.green{color:#10B981;}
+.at-stat-val.green { background: #10B981; color: #fff; }
 .at-stat-val.amber{color:#D97706;}
 
 /* streak card */

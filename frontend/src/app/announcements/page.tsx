@@ -72,10 +72,10 @@ const CSS = `
 .an-cell-chk { width: 40px; text-align: center; }
 .an-cell-ann { display: flex; align-items: flex-start; gap: 12px; }
 .an-ann-ic { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ic-general { background: #F3E8FF; color: #7E22CE; }
-.ic-update { background: #ECFDF5; color: #059669; }
-.ic-alert { background: #FFF7ED; color: #C2410C; }
-.ic-maintenance { background: #EFF6FF; color: #1D4ED8; }
+.ic-general { background: #8B5CF6; color: #fff; }
+.ic-update { background: #10B981; color: #fff; }
+.ic-alert { background: #EF4444; color: #fff; }
+.ic-maintenance { background: #3B82F6; color: #fff; }
 
 .an-ann-info { display: flex; flex-direction: column; min-width: 0; }
 .an-ann-title { font-size: 13px; font-weight: 700; color: #1E293B; }

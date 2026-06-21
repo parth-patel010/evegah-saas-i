@@ -165,88 +165,8 @@ const seed = async () => {
     ]);
   }
 
-  // Seed batteries
-  const mockBatteries = [
-    { battery_id: 'BAT-450X-12340001', status: 'in_use', soc: 68, voltage: 62.4, current: -8.5, temp: 34.5, cycles: 112, health: 96, lat: 28.6448, lng: 77.1888 },
-    { battery_id: 'BAT-450X-12340002', status: 'charging', soc: 92, voltage: 66.8, current: 5.2, temp: 38.2, cycles: 84, health: 98, lat: 28.6304, lng: 77.2177 },
-    { battery_id: 'BAT-450X-12340003', status: 'idle', soc: 45, voltage: 59.2, current: 0.0, temp: 28.1, cycles: 245, health: 89, lat: 28.6261, lng: 77.1991 },
-    { battery_id: 'BAT-450X-12340004', status: 'alert', soc: 18, voltage: 56.1, current: -12.4, temp: 48.9, cycles: 156, health: 91, lat: 28.6271, lng: 77.2166 },
-    { battery_id: 'BAT-450X-12340005', status: 'in_use', soc: 85, voltage: 64.1, current: -6.2, temp: 32.0, cycles: 45, health: 99, lat: 28.6425, lng: 77.1783 }
-  ];
+  // Dummy batteries seeding removed since BMS data now comes from real live database
 
-  for (const bat of mockBatteries) {
-    const avgCell = bat.voltage / 13;
-    const cells = Array.from({ length: 13 }, () => parseFloat((avgCell + (Math.random() * 0.02 - 0.01)).toFixed(3)));
-
-    await db.query(`
-      INSERT INTO batteries (battery_id, status, soc, voltage, current, temp, cycles, health, lat, lng, cells)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      ON CONFLICT (battery_id) DO UPDATE SET
-        status = EXCLUDED.status,
-        soc = EXCLUDED.soc,
-        voltage = EXCLUDED.voltage,
-        current = EXCLUDED.current,
-        temp = EXCLUDED.temp,
-        cycles = EXCLUDED.cycles,
-        health = EXCLUDED.health,
-        lat = EXCLUDED.lat,
-        lng = EXCLUDED.lng,
-        cells = EXCLUDED.cells,
-        updated_at = NOW()
-    `, [
-      bat.battery_id, bat.status, bat.soc, bat.voltage, bat.current,
-      bat.temp, bat.cycles, bat.health, bat.lat, bat.lng,
-      JSON.stringify(cells)
-    ]);
-
-    // Seed 20 historical logs for each battery, spanning 24 hours
-    for (let h = 20; h >= 0; h--) {
-      const logTime = new Date(Date.now() - h * 60 * 60 * 1000);
-      
-      let logSoc = bat.soc;
-      let logTemp = bat.temp;
-      let logVoltage = bat.voltage;
-      let logCurrent = bat.current;
-      
-      if (bat.status === 'charging') {
-        logSoc = Math.max(10, bat.soc - h * 4);
-        logVoltage = 58.0 + (logSoc / 100) * 9.0;
-        logTemp = 32.0 + Math.sin(h) * 4;
-        logCurrent = 5.2;
-      } else if (bat.status === 'in_use' || bat.status === 'alert') {
-        logSoc = Math.min(100, bat.soc + h * 3);
-        logVoltage = 65.0 - ((100 - logSoc) / 100) * 9.0;
-        logTemp = 28.0 + (20 - h) * 0.6 + Math.cos(h) * 2;
-        logCurrent = -4.0 - Math.random() * 5;
-      } else {
-        logTemp = 27.0 + Math.sin(h) * 1.5;
-        logCurrent = 0.0;
-      }
-
-      logSoc = Math.min(100, Math.max(0, Math.round(logSoc)));
-      logVoltage = parseFloat(logVoltage.toFixed(2));
-      logTemp = parseFloat(logTemp.toFixed(1));
-      logCurrent = parseFloat(logCurrent.toFixed(2));
-      
-      const logAvgCell = logVoltage / 13;
-      const logCells = Array.from({ length: 13 }, () => parseFloat((logAvgCell + (Math.random() * 0.02 - 0.01)).toFixed(3)));
-      
-      let logLat = parseFloat(bat.lat);
-      let logLng = parseFloat(bat.lng);
-      if (bat.status === 'in_use' || bat.status === 'alert') {
-        logLat += (10 - h) * 0.0005;
-        logLng += (10 - h) * 0.0005;
-      }
-
-      await db.query(`
-        INSERT INTO battery_logs (battery_id, soc, voltage, current, temp, lat, lng, status, cells, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      `, [
-        bat.battery_id, logSoc, logVoltage, logCurrent, logTemp,
-        logLat, logLng, bat.status, JSON.stringify(logCells), logTime
-      ]);
-    }
-  }
 
   // Seed default settings
   const defaultSettings = [

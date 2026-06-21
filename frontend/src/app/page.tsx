@@ -90,11 +90,11 @@ const EMPLOYEE_CSS = `
 .ev-sc{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:15px 16px 13px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .ev-sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px}
 .ev-sc-ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ic-purple{background:#EEF2FF;color:#2a195c}
-.ic-green{background:#DCFCE7;color:#16A34A}
-.ic-orange{background:#FEF3C7;color:#D97706}
-.ic-blue{background:#EFF6FF;color:#2563EB}
-.ic-teal{background:#F0FDFA;color:#0D9488}
+.ic-purple { background: #8B5CF6; color: #fff; }
+.ic-green { background: #10B981; color: #fff; }
+.ic-orange { background: #F97316; color: #fff; }
+.ic-blue { background: #3B82F6; color: #fff; }
+.ic-teal { background: #14B8A6; color: #fff; }
 .ev-sc-tit{font-size:11.5px;font-weight:500;color:#6B7280}
 .ev-sc-per{font-size:10.5px;color:#9CA3AF;margin-top:1px}
 .ev-sc-val{font-size:28px;font-weight:800;color:#111827;line-height:1;margin:6px 0}
