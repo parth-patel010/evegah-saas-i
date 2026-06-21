@@ -1100,8 +1100,13 @@ class BatteryNotifier extends StateNotifier<BatteryState> {
       lat ??= 28.6304;
       lng ??= 77.2177;
 
+      final isGenericName = battery.name.startsWith('DL Battery');
+      final batteryIdToSend = isGenericName ? battery.id : battery.name;
+      final serialNumberToSend = battery.id;
+
       final data = {
-        'battery_id': battery.id,
+        'battery_id': batteryIdToSend,
+        'serial_number': serialNumberToSend,
         'status': battery.status == BatteryStatus.connected
             ? (battery.current > 0 ? 'charging' : battery.current < 0 ? 'in_use' : 'idle')
             : (battery.status == BatteryStatus.faulty ? 'alert' : 'idle'),
